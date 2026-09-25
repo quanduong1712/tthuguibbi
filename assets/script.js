@@ -1061,6 +1061,12 @@ class FinalMoonSequenceController {
     this.experienceReset = false;
     this.requiredClicks = 8;
     this.spawnPlan = [3, 3, 3, 3, 3, 3, 3, 3];
+    this.heartOutlinePoints = [
+      [0, 3.0], [1.2, 4.1], [2.8, 4.8], [4.5, 4.4], [5.9, 3.2],
+      [6.5, 1.4], [6.0, -0.5], [4.9, -2.4], [3.2, -4.1], [1.4, -5.6],
+      [0, -6.8], [-1.4, -5.6], [-3.2, -4.1], [-4.9, -2.4], [-6.0, -0.5],
+      [-6.5, 1.4], [-5.9, 3.2], [-4.5, 4.4], [-2.8, 4.8], [-1.2, 4.1],
+    ];
     this.secretLanterns = [];
     this.group = new THREE.Group();
     this.sequenceElapsed = 0;
@@ -1087,19 +1093,17 @@ class FinalMoonSequenceController {
   }
 
   heartPoint(index, total) {
-    const angle = (index / total) * Math.PI * 2;
-    const x = 5.8 * Math.pow(Math.sin(angle), 3);
-    const y =
-      4.15 * Math.cos(angle) -
-      1.55 * Math.cos(2 * angle) -
-      0.68 * Math.cos(3 * angle) -
-      0.32 * Math.cos(4 * angle);
-    const depthLayer = (index % 3 - 1) * 1.25 + Math.sin(angle * 2) * 0.7;
-    return new THREE.Vector3(
-      moonPosition.x + x,
-      moonPosition.y + y + 0.2,
-      moonPosition.z + 5.8 + depthLayer,
-    );
+    const frontCount = Math.min(20, total);
+    const isFrontOutline = index < frontCount;
+    const outlineIndex = isFrontOutline
+      ? index
+      : (index - frontCount) * 5 + 2;
+    const outlinePoint = this.heartOutlinePoints[outlineIndex % this.heartOutlinePoints.length];
+    const x = outlinePoint[0] * (isFrontOutline ? 1 : 0.7);
+    const y = outlinePoint[1] * (isFrontOutline ? 1 : 0.7);
+    const anchor = new THREE.Vector3(moonPosition.x + 10, moonPosition.y + 2.4, moonPosition.z + 6.6);
+    const depth = isFrontOutline ? 0.9 : -1.15 + (index % 2 ? 0.45 : -0.35);
+    return new THREE.Vector3(anchor.x + x, anchor.y + y, anchor.z + depth);
   }
 
   spawnLanterns(count) {
@@ -1160,16 +1164,17 @@ class FinalMoonSequenceController {
     finale.classList.remove("is-visible");
     this.secretLanterns.forEach((lantern, index) => {
       lantern.heartTarget = this.heartPoint(index, this.secretLanterns.length);
+      lantern.heartScale = index < Math.min(20, this.secretLanterns.length) ? 0.98 : 0.56;
     });
-    targetCamPos = new THREE.Vector3(0, 13.5, 37);
-    targetCamTarget = new THREE.Vector3(0, 8.5, -4);
+    targetCamPos = new THREE.Vector3(0, 15.5, 45);
+    targetCamTarget = new THREE.Vector3(7.4, 10.7, -10);
   }
 
   completeHeart() {
     if (this.heartFormationComplete) return;
     this.heartFormationComplete = true;
     this.finalMessageVisible = true;
-    this.messageElapsed = 0;
+    this.messageElapsed = -3;
     this.messageIndex = -1;
     moonGlow.scale.setScalar(17);
     moonRitual.classList.add("is-visible");
@@ -1178,7 +1183,8 @@ class FinalMoonSequenceController {
   update(delta, time) {
     this.secretLanterns.forEach((lantern, index) => {
       lantern.spawnAge += delta;
-      const scale = Math.min(1, lantern.spawnAge * 1.7) * 0.72;
+      const baseScale = this.heartSequenceStarted ? (lantern.heartScale || 0.72) : 0.72;
+      const scale = Math.min(1, lantern.spawnAge * 1.7) * baseScale;
       lantern.group.scale.setScalar(scale);
       lantern.group.rotation.y += delta * 0.35;
       const target = this.heartSequenceStarted
@@ -1191,9 +1197,10 @@ class FinalMoonSequenceController {
       const easing = this.heartSequenceStarted ? 0.028 : 0.018;
       lantern.group.position.lerp(target, easing);
       lantern.group.rotation.z = Math.sin(time * 0.85 + lantern.driftPhase) * 0.1;
-      lantern.glow.material.opacity = this.heartSequenceStarted ? 0.92 : 0.55;
-      lantern.glow.scale.setScalar(this.heartSequenceStarted ? 4.1 : 2.8);
-      lantern.body.material.emissiveIntensity = this.heartSequenceStarted ? 1.7 : 1.05;
+      const isFrontOutline = lantern.heartScale > 0.8;
+      lantern.glow.material.opacity = this.heartSequenceStarted ? (isFrontOutline ? 1 : 0.55) : 0.55;
+      lantern.glow.scale.setScalar(this.heartSequenceStarted ? (isFrontOutline ? 5.2 : 3.2) : 2.8);
+      lantern.body.material.emissiveIntensity = this.heartSequenceStarted ? (isFrontOutline ? 2.25 : 1.1) : 1.05;
     });
 
     if (this.heartSequenceStarted && !this.heartFormationComplete) {
@@ -1203,6 +1210,7 @@ class FinalMoonSequenceController {
 
     if (this.finalMessageVisible && !this.endingComplete) {
       this.messageElapsed += delta;
+      if (this.messageElapsed < 0) return;
       const nextIndex = Math.floor(this.messageElapsed / 2.5);
       if (nextIndex !== this.messageIndex && nextIndex < this.messages.length) {
         this.messageIndex = nextIndex;

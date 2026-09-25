@@ -292,9 +292,10 @@ html {
   inset: 0;
   z-index: 120;
   display: grid;
-  place-content: center;
+  align-content: end;
+  justify-items: center;
   gap: 24px;
-  padding: 28px;
+  padding: 28px 28px 12vh;
   background: rgba(3, 5, 17, 0.22);
   opacity: 0;
   pointer-events: none;
