@@ -466,28 +466,51 @@ const heroTrunkCurve = new THREE.CatmullRomCurve3([
   new THREE.Vector3(-1.05, 7.5, -0.2),
 ]);
 
-function addTaperedTreeSegment(start, end, baseRadius, topRadius, material) {
-  const direction = new THREE.Vector3().subVectors(end, start);
-  const segment = new THREE.Mesh(
-    new THREE.CylinderGeometry(topRadius, baseRadius, direction.length(), 10),
-    material,
-  );
-  segment.position.copy(start).add(end).multiplyScalar(0.5);
-  segment.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-  storyTreeGroup.add(segment);
+function createTaperedTrunk(curve, segments, sides, baseRadius, topRadius) {
+  const centers = curve.getPoints(segments);
+  const positions = [];
+  const indices = [];
+
+  centers.forEach((center, ringIndex) => {
+    const previous = centers[Math.max(0, ringIndex - 1)];
+    const next = centers[Math.min(centers.length - 1, ringIndex + 1)];
+    const tangent = new THREE.Vector3().subVectors(next, previous).normalize();
+    const reference = Math.abs(tangent.y) > 0.9
+      ? new THREE.Vector3(1, 0, 0)
+      : new THREE.Vector3(0, 1, 0);
+    const normal = new THREE.Vector3().crossVectors(reference, tangent).normalize();
+    const binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
+    const progress = ringIndex / (centers.length - 1);
+    const radius = THREE.MathUtils.lerp(baseRadius, topRadius, progress);
+
+    for (let side = 0; side < sides; side++) {
+      const angle = (side / sides) * Math.PI * 2;
+      const point = center.clone()
+        .addScaledVector(normal, Math.cos(angle) * radius)
+        .addScaledVector(binormal, Math.sin(angle) * radius);
+      positions.push(point.x, point.y, point.z);
+    }
+  });
+
+  for (let ring = 0; ring < centers.length - 1; ring++) {
+    for (let side = 0; side < sides; side++) {
+      const nextSide = (side + 1) % sides;
+      const current = ring * sides + side;
+      const next = ring * sides + nextSide;
+      const upper = (ring + 1) * sides + side;
+      const upperNext = (ring + 1) * sides + nextSide;
+      indices.push(current, upper, next, next, upper, upperNext);
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return new THREE.Mesh(geometry, heroTrunkMat);
 }
 
-const trunkPoints = heroTrunkCurve.getPoints(18);
-for (let trunkIndex = 0; trunkIndex < trunkPoints.length - 1; trunkIndex++) {
-  const progress = trunkIndex / (trunkPoints.length - 1);
-  addTaperedTreeSegment(
-    trunkPoints[trunkIndex],
-    trunkPoints[trunkIndex + 1],
-    THREE.MathUtils.lerp(0.78, 0.23, progress),
-    THREE.MathUtils.lerp(0.78, 0.23, progress + 1 / (trunkPoints.length - 1)),
-    heroTrunkMat,
-  );
-}
+storyTreeGroup.add(createTaperedTrunk(heroTrunkCurve, 22, 12, 0.82, 0.2));
 
 const heroBranches = [
   [new THREE.Vector3(-0.35, 3.2, 0), new THREE.Vector3(-2.6, 5.6, 0.4), new THREE.Vector3(-4.1, 6.2, 0.1)],
@@ -504,10 +527,11 @@ heroBranches.forEach((points, index) => {
 });
 
 const heroCanopyCenters = [
-  [-3.45, 7.15, 2.2, 1.0, 1.4], [-2.0, 8.35, 2.45, 1.1, 1.5],
-  [-0.25, 8.6, 2.55, 1.15, 1.5], [1.75, 7.5, 2.2, 1.0, 1.45],
-  [-3.1, 5.9, 1.7, 0.82, 1.15], [-0.4, 6.65, 2.25, 0.9, 1.3],
-  [2.65, 6.45, 1.65, 0.78, 1.05], [-1.1, 9.45, 1.5, 0.7, 0.95],
+  [-4.5, 6.8, 2.5, 0.82, 1.45], [-2.5, 7.85, 2.85, 0.92, 1.55],
+  [-0.1, 8.25, 3.0, 1.0, 1.6], [2.55, 7.35, 2.7, 0.86, 1.5],
+  [4.35, 6.35, 2.0, 0.7, 1.22], [-3.4, 5.65, 2.1, 0.7, 1.2],
+  [-0.6, 6.25, 2.65, 0.78, 1.35], [1.9, 5.95, 2.25, 0.68, 1.2],
+  [-1.4, 9.25, 2.4, 0.65, 1.2],
 ];
 heroCanopyCenters.forEach(([x, y, width, height, depth], index) => {
   const canopy = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 14), heroLeafMats[index % heroLeafMats.length]);
@@ -592,18 +616,18 @@ function createCouple() {
     foot.rotation.y = rotationY;
     return foot;
   };
-  addLimb(new THREE.Vector3(0.52, 0.52, 0.08), new THREE.Vector3(0.98, 0.25, 0.48), 0.13, pantsMat);
-  addLimb(new THREE.Vector3(0.98, 0.25, 0.48), new THREE.Vector3(1.04, 0.08, 1.08), 0.115, pantsMat);
-  addFoot(new THREE.Vector3(1.04, 0.05, 1.3), -0.08);
-  addLimb(new THREE.Vector3(0.12, 0.5, 0.05), new THREE.Vector3(-0.15, 0.24, 0.62), 0.125, pantsMat);
-  addLimb(new THREE.Vector3(-0.15, 0.24, 0.62), new THREE.Vector3(0.02, 0.08, 1.13), 0.11, pantsMat);
-  addFoot(new THREE.Vector3(0.02, 0.05, 1.35), 0.12);
-  addLimb(new THREE.Vector3(-0.57, 0.48, 0.2), new THREE.Vector3(-1.12, 0.25, 0.5), 0.115, dressMat);
-  addLimb(new THREE.Vector3(-1.12, 0.25, 0.5), new THREE.Vector3(-1.28, 0.08, 1.0), 0.1, dressMat);
-  addFoot(new THREE.Vector3(-1.28, 0.05, 1.2), -0.15);
-  addLimb(new THREE.Vector3(-0.25, 0.46, 0.15), new THREE.Vector3(-0.48, 0.24, 0.73), 0.11, dressMat);
-  addLimb(new THREE.Vector3(-0.48, 0.24, 0.73), new THREE.Vector3(-0.3, 0.08, 1.32), 0.095, dressMat);
-  addFoot(new THREE.Vector3(-0.3, 0.05, 1.52), 0.18);
+  addLimb(new THREE.Vector3(0.52, 0.52, 0.08), new THREE.Vector3(0.92, 0.38, 0.38), 0.13, pantsMat);
+  addLimb(new THREE.Vector3(0.92, 0.38, 0.38), new THREE.Vector3(0.76, 0.1, 0.82), 0.115, pantsMat);
+  addFoot(new THREE.Vector3(0.76, 0.06, 1.02), -0.12);
+  addLimb(new THREE.Vector3(0.12, 0.5, 0.05), new THREE.Vector3(-0.2, 0.36, 0.38), 0.125, pantsMat);
+  addLimb(new THREE.Vector3(-0.2, 0.36, 0.38), new THREE.Vector3(-0.02, 0.1, 0.86), 0.11, pantsMat);
+  addFoot(new THREE.Vector3(-0.02, 0.06, 1.06), 0.1);
+  addLimb(new THREE.Vector3(-0.57, 0.48, 0.2), new THREE.Vector3(-1.0, 0.35, 0.38), 0.115, dressMat);
+  addLimb(new THREE.Vector3(-1.0, 0.35, 0.38), new THREE.Vector3(-1.05, 0.1, 0.78), 0.1, dressMat);
+  addFoot(new THREE.Vector3(-1.05, 0.06, 0.98), -0.2);
+  addLimb(new THREE.Vector3(-0.25, 0.46, 0.15), new THREE.Vector3(-0.58, 0.34, 0.46), 0.11, dressMat);
+  addLimb(new THREE.Vector3(-0.58, 0.34, 0.46), new THREE.Vector3(-0.38, 0.1, 0.88), 0.095, dressMat);
+  addFoot(new THREE.Vector3(-0.38, 0.06, 1.08), 0.15);
 
   // One arm holds her close; the other forms a clear line toward the moon.
   addLimb(new THREE.Vector3(0.67, 1.03, 0.08), new THREE.Vector3(0.08, 1.02, 0.42), 0.11, shirtMat);
