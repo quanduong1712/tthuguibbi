@@ -16,9 +16,9 @@ const camera = new THREE.PerspectiveCamera(
 );
 
 const DEFAULT_CAM_POS = isMobile
-  ? new THREE.Vector3(0, 8, 29)
-  : new THREE.Vector3(0, 7.4, 27);
-const DEFAULT_CAM_TARGET = new THREE.Vector3(0, 5.8, 0.6);
+  ? new THREE.Vector3(0, 9, 34)
+  : new THREE.Vector3(0, 8, 35);
+const DEFAULT_CAM_TARGET = new THREE.Vector3(0, 6.2, 0.5);
 
 camera.position.copy(DEFAULT_CAM_POS);
 
@@ -127,20 +127,6 @@ scene.add(moonLight);
 // ISLAND
 const islandGroup = new THREE.Group();
 scene.add(islandGroup);
-
-const assetManager = new Romance3D.AssetManager();
-const proceduralWorld = new THREE.Group();
-const proceduralIsland = Romance3D.IslandFactory.create(assetManager);
-proceduralWorld.add(proceduralIsland.group);
-proceduralWorld.add(Romance3D.TreeFactory.create(assetManager, proceduralIsland.groundY));
-proceduralWorld.add(Romance3D.CharacterFactory.createCouple(
-  assetManager,
-  proceduralIsland.groundY,
-  moonPosition,
-));
-proceduralWorld.add(Romance3D.PropFactory.create(assetManager, proceduralIsland.groundY));
-scene.add(proceduralWorld);
-islandGroup.visible = false;
 
 const islandGeo = new THREE.CylinderGeometry(
   11.4,
@@ -812,15 +798,6 @@ function createLanternTexture() {
 const lanternTex = createLanternTexture();
 
 function createLanternMesh() {
-  const proceduralLantern = Romance3D.LanternFactory.create();
-  return {
-    group: proceduralLantern.group,
-    hitMesh: proceduralLantern.hitMesh,
-    glow: proceduralLantern.glow,
-    body: proceduralLantern.body,
-  };
-
-  /* Legacy lantern geometry retained below for reference during the rebuild. */
   const group = new THREE.Group();
 
   const bodyGeo = new THREE.CylinderGeometry(0.6, 0.45, 1.4, 6);
@@ -1354,7 +1331,7 @@ function animate() {
     }
   }
 
-  proceduralWorld.rotation.y = Math.sin(time * 0.12) * 0.025;
+  islandGroup.rotation.y = Math.sin(time * 0.15) * 0.05;
 
   updateRabbits(time);
   coupleGroup.position.y = 4.18 + Math.sin(time * 1.6) * 0.025;
