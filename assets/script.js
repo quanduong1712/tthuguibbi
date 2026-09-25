@@ -930,6 +930,8 @@ class IntroSequenceController {
     this.hitMesh = hitMesh;
     this.introGroup.add(group);
     this.introPosition = new THREE.Vector3(0, 6.7, 17);
+    this.passwordPosition = new THREE.Vector3(0, 11.35, 17);
+    this.passwordScale = 1.18;
     this.worldPosition = new THREE.Vector3(-10, 7, 4);
     this.lantern.position.copy(this.introPosition);
     this.lantern.scale.setScalar(3.15);
@@ -1094,8 +1096,26 @@ class IntroSequenceController {
     this.logo.position.z += 0.75;
 
     if (this.state === "LANTERN_IGNITING" && this.elapsed >= 2.6) {
-      this.state = "PASSWORD";
-      passwordGate.classList.add("is-puzzle-visible");
+      this.state = "PASSWORD_REVEAL";
+      this.travelElapsed = 0;
+      return;
+    }
+
+    if (this.state === "PASSWORD_REVEAL") {
+      this.travelElapsed += delta;
+      const passwordTravel = Math.min(1, this.travelElapsed / 1.3);
+      const easedPasswordTravel = smooth(passwordTravel);
+      this.lantern.position.lerpVectors(this.introPosition, this.passwordPosition, easedPasswordTravel);
+      this.lantern.scale.setScalar(THREE.MathUtils.lerp(3.15, this.passwordScale, easedPasswordTravel));
+      this.light.position.copy(this.lantern.position);
+      this.logo.position.copy(this.lantern.position);
+      this.logo.position.z += 0.75;
+      this.logo.scale.setScalar(THREE.MathUtils.lerp(2.5, 0.84, easedPasswordTravel));
+      this.dust.position.copy(this.lantern.position);
+      if (passwordTravel >= 1) {
+        this.state = "PASSWORD";
+        passwordGate.classList.add("is-puzzle-visible");
+      }
       return;
     }
 
@@ -1108,7 +1128,7 @@ class IntroSequenceController {
     if (travel > 0.16) this.revealWorld();
     const waypoint = new THREE.Vector3(1.6, 10, 6);
     const pathPoint = travel < 0.5
-      ? this.introPosition.clone().lerp(waypoint, smooth(travel * 2))
+      ? this.passwordPosition.clone().lerp(waypoint, smooth(travel * 2))
       : waypoint.clone().lerp(this.worldPosition, smooth((travel - 0.5) * 2));
     this.lantern.position.copy(pathPoint);
     this.lantern.rotation.y += delta * 0.8;
