@@ -915,8 +915,11 @@ class IntroSequenceController {
   constructor() {
     this.state = "INTRO_IDLE";
     this.elapsed = 0;
+    this.travelElapsed = 0;
     this.started = false;
     this.worldReady = false;
+    this.originalLantern = null;
+    this.originalHitMesh = null;
     this.introGroup = new THREE.Group();
     scene.add(this.introGroup);
 
@@ -1034,6 +1037,40 @@ class IntroSequenceController {
     petalsParticles.visible = true;
   }
 
+  enterWorld() {
+    if (this.state !== "PASSWORD") return;
+    this.state = "LANTERN_TRAVEL";
+    this.travelElapsed = 0;
+    passwordGate.classList.add("is-unlocked");
+  }
+
+  transferIntoWorld() {
+    const original = lanterns.find((lantern) => lantern.userData.id === 0);
+    if (!original || this.originalLantern) return;
+    this.originalLantern = original;
+    this.originalHitMesh = interactiveObjects.find(
+      (hitMesh) => hitMesh.userData.parentLantern === original,
+    );
+    original.visible = false;
+    const lanternIndex = lanterns.indexOf(original);
+    const hitIndex = interactiveObjects.indexOf(this.originalHitMesh);
+    this.introGroup.remove(this.lantern);
+    this.lantern.scale.setScalar(original.scale.x);
+    this.lantern.position.copy(this.worldPosition);
+    this.lantern.rotation.set(0, 0, 0);
+    this.lantern.userData = Object.assign({}, original.userData, {
+      body: this.body,
+      glow: this.glow,
+      initialX: this.worldPosition.x,
+      initialY: this.worldPosition.y,
+      initialZ: this.worldPosition.z,
+    });
+    this.hitMesh.userData.parentLantern = this.lantern;
+    lanternsGroup.add(this.lantern);
+    lanterns[lanternIndex] = this.lantern;
+    if (hitIndex >= 0) interactiveObjects[hitIndex] = this.hitMesh;
+  }
+
   update(delta, time) {
     if (this.state === "INTRO_IDLE") {
       this.lantern.position.y = this.introPosition.y + Math.sin(time * 0.7) * 0.16;
@@ -1056,12 +1093,19 @@ class IntroSequenceController {
     this.logo.position.copy(this.lantern.position);
     this.logo.position.z += 0.75;
 
-    if (this.elapsed < 2.6) return;
-    if (this.state === "LANTERN_IGNITING") this.state = "WORLD_REVEAL";
+    if (this.state === "LANTERN_IGNITING" && this.elapsed >= 2.6) {
+      this.state = "PASSWORD";
+      passwordGate.classList.add("is-puzzle-visible");
+      return;
+    }
 
-    const travel = Math.min(1, (this.elapsed - 2.6) / 4.2);
+    if (this.state === "PASSWORD") return;
+    if (this.state !== "LANTERN_TRAVEL") return;
+
+    this.travelElapsed += delta;
+    const travel = Math.min(1, this.travelElapsed / 4.2);
     const eased = smooth(travel);
-    this.revealWorld();
+    if (travel > 0.16) this.revealWorld();
     const waypoint = new THREE.Vector3(1.6, 10, 6);
     const pathPoint = travel < 0.5
       ? this.introPosition.clone().lerp(waypoint, smooth(travel * 2))
@@ -1077,33 +1121,39 @@ class IntroSequenceController {
     camera.position.lerpVectors(new THREE.Vector3(0, 6.7, 22), DEFAULT_CAM_POS, eased);
     controls.target.lerpVectors(this.introPosition, DEFAULT_CAM_TARGET, eased);
 
-    if (travel >= 1 && this.state !== "PASSWORD") {
-      this.state = "PASSWORD";
-      this.introGroup.remove(this.lantern);
-      this.lantern.scale.setScalar(0.72);
-      this.lantern.position.copy(this.worldPosition);
-      this.lantern.rotation.set(0, 0, 0);
-      this.lantern.userData.initialX = this.worldPosition.x;
-      this.lantern.userData.initialY = this.worldPosition.y;
-      this.lantern.userData.initialZ = this.worldPosition.z;
-      lanternsGroup.add(this.lantern);
-      lanterns.push(this.lantern);
+    if (travel >= 1 && this.state !== "WORLD_ARRIVAL") {
+      this.state = "WORLD_ARRIVAL";
+      this.transferIntoWorld();
       this.light.intensity = 0;
       this.logo.visible = false;
       this.dust.visible = false;
       camera.position.copy(DEFAULT_CAM_POS);
       controls.target.copy(DEFAULT_CAM_TARGET);
-      passwordGate.classList.add("is-puzzle-visible");
+      worldUnlocked = true;
+      controls.enabled = true;
+      document.body.classList.remove("intro-sequence");
+      storyIntro.classList.remove("is-hidden");
+      storyIntro.querySelector("p").textContent = "Chào mừng bbi đến với nơi nhỏ anh làm cho bbi.";
+      storyIntro.querySelector("span").textContent = "Xoay quanh một chút nhé...";
+      setTimeout(() => storyIntro.classList.add("is-hidden"), 4200);
     }
   }
 
   reset() {
-    lanternsGroup.remove(this.lantern);
-    const lanternIndex = lanterns.indexOf(this.lantern);
-    if (lanternIndex >= 0) lanterns.splice(lanternIndex, 1);
+    if (this.originalLantern) {
+      const lanternIndex = lanterns.indexOf(this.lantern);
+      const hitIndex = interactiveObjects.indexOf(this.hitMesh);
+      lanternsGroup.remove(this.lantern);
+      this.originalLantern.visible = true;
+      if (lanternIndex >= 0) lanterns[lanternIndex] = this.originalLantern;
+      if (hitIndex >= 0) interactiveObjects[hitIndex] = this.originalHitMesh;
+      this.originalLantern = null;
+      this.originalHitMesh = null;
+    }
     this.introGroup.add(this.lantern);
     this.state = "INTRO_IDLE";
     this.elapsed = 0;
+    this.travelElapsed = 0;
     this.started = false;
     this.worldReady = false;
     this.lantern.position.copy(this.introPosition);
@@ -1665,14 +1715,7 @@ passwordForm.addEventListener("submit", (event) => {
     passwordInput.disabled = true;
     passwordForm.querySelector("button").disabled = true;
     setTimeout(() => {
-      worldUnlocked = true;
-      controls.enabled = true;
-      document.body.classList.remove("intro-sequence");
-      passwordGate.classList.add("is-unlocked");
-      storyIntro.classList.remove("is-hidden");
-      storyIntro.querySelector("p").textContent = "Chào mừng bbi đến với nơi nhỏ anh làm cho bbi.";
-      storyIntro.querySelector("span").textContent = "Xoay quanh một chút nhé...";
-      setTimeout(() => storyIntro.classList.add("is-hidden"), 4200);
+      introSequence.enterWorld();
     }, 1200);
     return;
   }
