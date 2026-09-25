@@ -465,7 +465,29 @@ const heroTrunkCurve = new THREE.CatmullRomCurve3([
   new THREE.Vector3(-0.15, 4.9, -0.1),
   new THREE.Vector3(-1.05, 7.5, -0.2),
 ]);
-storyTreeGroup.add(new THREE.Mesh(new THREE.TubeGeometry(heroTrunkCurve, 36, 0.44, 10, false), heroTrunkMat));
+
+function addTaperedTreeSegment(start, end, baseRadius, topRadius, material) {
+  const direction = new THREE.Vector3().subVectors(end, start);
+  const segment = new THREE.Mesh(
+    new THREE.CylinderGeometry(topRadius, baseRadius, direction.length(), 10),
+    material,
+  );
+  segment.position.copy(start).add(end).multiplyScalar(0.5);
+  segment.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+  storyTreeGroup.add(segment);
+}
+
+const trunkPoints = heroTrunkCurve.getPoints(18);
+for (let trunkIndex = 0; trunkIndex < trunkPoints.length - 1; trunkIndex++) {
+  const progress = trunkIndex / (trunkPoints.length - 1);
+  addTaperedTreeSegment(
+    trunkPoints[trunkIndex],
+    trunkPoints[trunkIndex + 1],
+    THREE.MathUtils.lerp(0.78, 0.23, progress),
+    THREE.MathUtils.lerp(0.78, 0.23, progress + 1 / (trunkPoints.length - 1)),
+    heroTrunkMat,
+  );
+}
 
 const heroBranches = [
   [new THREE.Vector3(-0.35, 3.2, 0), new THREE.Vector3(-2.6, 5.6, 0.4), new THREE.Vector3(-4.1, 6.2, 0.1)],
@@ -564,14 +586,24 @@ function createCouple() {
   addFace(new THREE.Vector3(0.28, 1.62, 0.12), new THREE.Vector3(1, 1.04, 0.96), new THREE.Vector3(1.04, 0.72, 1), false);
   addFace(new THREE.Vector3(-0.38, 1.41, 0.27), new THREE.Vector3(0.96, 1, 0.94), new THREE.Vector3(1.08, 0.78, 1.04), true);
 
-  // Relaxed seated legs, separated enough to read from all angles.
-  addLimb(new THREE.Vector3(0.55, 0.5, 0.1), new THREE.Vector3(0.94, 0.16, 0.72), 0.16, pantsMat);
-  addLimb(new THREE.Vector3(0.94, 0.16, 0.72), new THREE.Vector3(0.82, 0.04, 1.28), 0.14, pantsMat);
-  addMesh(new THREE.SphereGeometry(0.18, 12, 8), shoeMat, new THREE.Vector3(0.82, 0.04, 1.42), new THREE.Vector3(1, 0.6, 1.45));
-  addLimb(new THREE.Vector3(0.1, 0.5, 0.02), new THREE.Vector3(-0.05, 0.12, 0.86), 0.15, pantsMat);
-  addMesh(new THREE.SphereGeometry(0.18, 12, 8), shoeMat, new THREE.Vector3(-0.05, 0.05, 1.02), new THREE.Vector3(1, 0.6, 1.4));
-  addLimb(new THREE.Vector3(-0.53, 0.43, 0.25), new THREE.Vector3(-0.95, 0.1, 0.74), 0.14, dressMat);
-  addMesh(new THREE.SphereGeometry(0.16, 12, 8), shoeMat, new THREE.Vector3(-0.96, 0.04, 1.02), new THREE.Vector3(1, 0.55, 1.32));
+  // Four complete leg chains: hip -> knee -> ankle -> shoe.
+  const addFoot = (position, rotationY = 0) => {
+    const foot = addMesh(new THREE.BoxGeometry(0.24, 0.13, 0.42), shoeMat, position);
+    foot.rotation.y = rotationY;
+    return foot;
+  };
+  addLimb(new THREE.Vector3(0.52, 0.52, 0.08), new THREE.Vector3(0.98, 0.25, 0.48), 0.13, pantsMat);
+  addLimb(new THREE.Vector3(0.98, 0.25, 0.48), new THREE.Vector3(1.04, 0.08, 1.08), 0.115, pantsMat);
+  addFoot(new THREE.Vector3(1.04, 0.05, 1.3), -0.08);
+  addLimb(new THREE.Vector3(0.12, 0.5, 0.05), new THREE.Vector3(-0.15, 0.24, 0.62), 0.125, pantsMat);
+  addLimb(new THREE.Vector3(-0.15, 0.24, 0.62), new THREE.Vector3(0.02, 0.08, 1.13), 0.11, pantsMat);
+  addFoot(new THREE.Vector3(0.02, 0.05, 1.35), 0.12);
+  addLimb(new THREE.Vector3(-0.57, 0.48, 0.2), new THREE.Vector3(-1.12, 0.25, 0.5), 0.115, dressMat);
+  addLimb(new THREE.Vector3(-1.12, 0.25, 0.5), new THREE.Vector3(-1.28, 0.08, 1.0), 0.1, dressMat);
+  addFoot(new THREE.Vector3(-1.28, 0.05, 1.2), -0.15);
+  addLimb(new THREE.Vector3(-0.25, 0.46, 0.15), new THREE.Vector3(-0.48, 0.24, 0.73), 0.11, dressMat);
+  addLimb(new THREE.Vector3(-0.48, 0.24, 0.73), new THREE.Vector3(-0.3, 0.08, 1.32), 0.095, dressMat);
+  addFoot(new THREE.Vector3(-0.3, 0.05, 1.52), 0.18);
 
   // One arm holds her close; the other forms a clear line toward the moon.
   addLimb(new THREE.Vector3(0.67, 1.03, 0.08), new THREE.Vector3(0.08, 1.02, 0.42), 0.11, shirtMat);
