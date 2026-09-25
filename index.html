@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trung Thu 3D</title>
+    <title>Dem Trung Thu cua hai dua</title>
 
     <!-- Google Fonts & FontAwesome -->
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
@@ -19,20 +19,32 @@
         <button class="icon-btn" id="reset-cam-btn" title="Góc nhìn ban đầu"><i class="fas fa-compress-arrows-alt"></i></button>
     </div>
 
-    <div class="click-hint">Chạm vào lồng đèn nhé</div>
+    <div class="story-intro" id="storyIntro" aria-live="polite">
+        <p>Anh lam mot noi nho cho bbi.</p>
+        <span>Xoay quanh mot chut nhe...</span>
+    </div>
+
+    <div class="explore-status" id="exploreStatus">0 / 7 dieu anh muon ke</div>
+    <div class="click-hint">Cham vao long den nhe</div>
 
     <div class="wish-modal" id="wishModal">
         <div class="wish-card">
             <button class="close-btn" id="closeWishBtn" aria-label="Đóng"><i class="fas fa-times"></i></button>
-            <h3 id="wishTitle">Thông Điệp Gửi Cậu</h3>
+            <h3 id="wishTitle">Thong diep gui bbi</h3>
             
             <div class="wish-image-container">
                 <img id="wishImage" src="" alt="Hình ảnh Trung Thu">
             </div>
 
-            <p id="wishText">"Chúc cậu một đêm Trung Thu ấm áp, bình an và trọn vẹn bên những người thương yêu."</p>
-            <div class="tag">✦ Trung Thu An Lành ✦</div>
+            <p id="wishText">Mot dieu nho anh muon gui den bbi.</p>
+            <div class="tag">Dem Trung Thu cua hai dua</div>
         </div>
+    </div>
+
+    <div class="finale" id="finale" aria-live="polite">
+        <p>Uoc gi Trung Thu sau...</p>
+        <p>...anh co the that su ngoi canh bbi.</p>
+        <strong>Chuc co gai nho cua anh mot mua Trung Thu that vui.</strong>
     </div>
 
     <audio id="bgm" loop src="./assets/1.mp3"></audio>

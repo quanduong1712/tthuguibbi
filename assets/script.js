@@ -347,6 +347,66 @@ const blossomMat = new THREE.PointsMaterial({
 const blossomParticles = new THREE.Points(blossomGeo, blossomMat);
 treeGroup.add(blossomParticles);
 
+// TWO PEOPLE UNDER THE TREE
+function createCouple() {
+  const couple = new THREE.Group();
+  const skinMat = new THREE.MeshStandardMaterial({
+    color: 0xf2c6a8,
+    roughness: 0.75,
+  });
+  const boyMat = new THREE.MeshStandardMaterial({
+    color: 0x3c5377,
+    roughness: 0.8,
+  });
+  const girlMat = new THREE.MeshStandardMaterial({
+    color: 0xc8758d,
+    roughness: 0.8,
+  });
+  const hairMat = new THREE.MeshStandardMaterial({
+    color: 0x21151c,
+    roughness: 0.9,
+  });
+
+  const addMesh = (geometry, material, position, scale) => {
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.copy(position);
+    if (scale) mesh.scale.copy(scale);
+    couple.add(mesh);
+    return mesh;
+  };
+
+  const bodyGeo = new THREE.SphereGeometry(0.52, 14, 12);
+  const headGeo = new THREE.SphereGeometry(0.34, 14, 12);
+  const armGeo = new THREE.CylinderGeometry(0.1, 0.12, 1.05, 10);
+
+  addMesh(bodyGeo, boyMat, new THREE.Vector3(0.28, 0.56, 0), new THREE.Vector3(0.9, 1.15, 0.72));
+  addMesh(headGeo, skinMat, new THREE.Vector3(0.28, 1.36, 0.06));
+  addMesh(new THREE.SphereGeometry(0.36, 14, 10), hairMat, new THREE.Vector3(0.28, 1.52, -0.02), new THREE.Vector3(1.02, 0.75, 1));
+
+  addMesh(bodyGeo, girlMat, new THREE.Vector3(-0.38, 0.5, 0.14), new THREE.Vector3(0.82, 1.04, 0.7));
+  addMesh(headGeo, skinMat, new THREE.Vector3(-0.36, 1.25, 0.12));
+  addMesh(new THREE.SphereGeometry(0.39, 14, 10), hairMat, new THREE.Vector3(-0.42, 1.4, 0.03), new THREE.Vector3(1.1, 1.08, 1.05));
+
+  const pointingArm = addMesh(armGeo, boyMat, new THREE.Vector3(0.8, 1.24, 0.04));
+  pointingArm.rotation.z = -1.05;
+  pointingArm.rotation.x = -0.3;
+
+  const holdingArm = addMesh(armGeo, boyMat, new THREE.Vector3(-0.05, 0.93, 0.33));
+  holdingArm.rotation.z = 0.92;
+  holdingArm.rotation.x = 0.3;
+
+  const hugArm = addMesh(armGeo, girlMat, new THREE.Vector3(-0.03, 1.05, 0.36));
+  hugArm.rotation.z = 1.1;
+  hugArm.rotation.x = 0.45;
+
+  couple.position.set(0, 4.18, 1.28);
+  couple.rotation.y = Math.PI;
+  return couple;
+}
+
+const coupleGroup = createCouple();
+islandGroup.add(coupleGroup);
+
 // RABBITS
 function createRabbit() {
   const group = new THREE.Group();
@@ -425,34 +485,47 @@ const interactiveObjects = [];
 
 const wishList = [
   {
-    text: "Trung Thu này, điều ước đẹp nhất của anh là được nắm tay em thật lâu, cùng ngắm trăng và cùng đi qua thật nhiều mùa trăng nữa.",
+    title: "Trung Thu vui ve nha bbi",
+    text: "Hi lu co gai nho cua anh. Trung Thu nay anh khong co mon qua gi qua to, cung chua the chay toi ben canh om bbi mot cai. Nen anh lam cho bbi mot the gioi nho xiu nay. Mong bbi se thich no nha. Chuc co gai cua anh co mot mua Trung Thu that vui, that binh yen va luc nao cung duoc yeu thuong that nhieu.",
     img: "./assets/photo-1.jpg",
   },
   {
-    text: "Cảm ơn em đã đến và biến những ngày bình thường của anh thành những kỷ niệm dịu dàng. Chúc em một đêm trăng thật ấm áp, người anh thương.",
+    title: "Dieu anh mong nhat",
+    text: "Anh mong bbi luon vui ve, an uong day du, ngu that ngon va dung vi nhung chuyen khong vui ma lam ban than minh met moi nha. Neu co ngay nao bbi buon, thi nho la van co mot nguoi luon thuong bbi rat nhieu.",
     img: "./assets/photo-2.jpg",
   },
   {
-    text: "Trăng có thể tròn rồi khuyết, nhưng tình cảm anh dành cho em vẫn luôn nguyên vẹn. Mong chúng mình mãi là chốn bình yên của nhau.",
+    title: "Neu hom nay anh o canh bbi...",
+    text: "Neu hom nay anh o canh bbi, anh se mua cho bbi mot cai banh Trung Thu that ngon. Roi hai dua se tim mot cho that yen, ngoi canh nhau, ngam trang, noi linh tinh ca toi. Co the chang can lam gi dac biet. Chi can duoc ngoi canh bbi thoi la anh vui roi.",
     img: "./assets/photo-3.jpg",
   },
   {
-    text: "Chúc cô gái của anh luôn cười thật nhiều, ngủ thật ngon và được yêu thương theo cách em xứng đáng. Anh sẽ luôn ở đây, cạnh em.",
+    title: "Anh nho bbi",
+    text: "Co nhung luc anh cung nho bbi nhieu lam. Nho nhung luc duoc o canh nhau, nho luc bbi cuoi, nho nhung luc bbi lam nung, nho ca nhung dieu nho xiu ma binh thuong anh chang de y. Khoang cach doi khi lam anh thay kho chiu that. Nhung anh van muon co gang, vi nguoi anh muon di cung van la bbi.",
     img: "./assets/photo-4.jpg",
   },
   {
-    text: "Giữa ánh trăng đêm nay, anh chỉ muốn nói rằng: có em trong cuộc đời là món quà ngọt ngào nhất mà anh từng nhận được.",
+    title: "Dieu anh muon cung bbi",
+    text: "Anh khong mong moi thu luc nao cung hoan hao. Anh chi mong hai dua minh co the cung nhau co gang. Cung truong thanh. Cung kiem tien. Cung xay dung cuoc song ma hai dua mong muon. Roi mot ngay, Trung Thu khong con la nhung cuoc goi hay nhung dong tin nhan nua, ma la hai dua that su ngoi canh nhau duoi anh trang.",
     img: "./assets/photo-5.jpg",
   },
   {
-    text: "Mong mỗi mùa Trung Thu về, chúng mình vẫn có thể nhìn lên cùng một vầng trăng, kể nhau nghe những chuyện nhỏ và thương nhau nhiều hơn.",
+    title: "Neu bbi dang buon...",
+    text: "Neu luc mo chiec den nay bbi dang buon, thi lai day anh om mot cai nha. Anh khong biet luc nao minh cung co the giai quyet duoc moi chuyen cho bbi. Nhung anh muon bbi biet rang bbi khong can phai manh me mot minh. Co chuyen gi thi cu tu tu. Met thi nghi. Buon thi cu buon mot chut. Roi minh lai cung nhau co gang tiep nha.",
     img: "./assets/photo-6.jpg",
   },
   {
-    text: "Chúc tình yêu của anh một mùa Trung Thu bình an, rực rỡ và đầy tiếng cười. Anh yêu em, hôm nay và cả những ngày về sau.",
+    title: "Mot loi chuc cho bbi",
+    text: "Anh chuc co gai nho cua anh luon khoe manh, luon binh an, luon duoc yeu thuong. Cong viec thuan loi, nhung dieu bbi co gang deu co ket qua. Nhung ngay buon se ngay cang it di va nhung ngay vui se ngay cang nhieu hon. Bbi xung dang voi nhung dieu that diu dang.",
     img: "./assets/photo-1.jpg",
   },
 ];
+
+const finalWish = {
+  title: "Dieu anh muon noi nhat",
+  text: "Trung Thu nay, anh khong the ngoi canh bbi duoi anh trang. Nhung anh van muon danh cho bbi mot dieu gi do that rieng. Anh khong biet tuong lai se co nhung chuyen gi, cung khong biet moi thu se luon de dang nhu the nao. Nhung anh biet mot dieu: anh van muon co gang de co the cung bbi di that lau. De sau nay, nhung chiec den long nay khong con la thu anh phai lam tren mot chiec may tinh nua, ma la hai dua that su ngoi canh nhau, duoi mot bau troi, ngam cung mot mat trang. Trung Thu vui ve nha co vo nho cua anh. Anh thuong bbi nhieu lam.",
+  img: "./assets/photo-2.jpg",
+};
 
 function createLanternTexture() {
   const canvas = document.createElement("canvas");
@@ -520,32 +593,29 @@ function createLanternMesh() {
   const hitMesh = new THREE.Mesh(hitGeo, hitMat);
   group.add(hitMesh);
 
-  return { group, hitMesh };
+  return { group, hitMesh, glow };
 }
 
-const lanternCount = isMobile ? 24 : 38;
-for (let i = 0; i < lanternCount; i++) {
-  const { group: lantern, hitMesh } = createLanternMesh();
-
-  const radius = 9 + Math.random() * 25;
-  const angle = Math.random() * Math.PI * 2;
-  const y = -1 + Math.random() * 30;
-
-  lantern.position.set(Math.cos(angle) * radius, y, Math.sin(angle) * radius);
-
-  const wishData = wishList[Math.floor(Math.random() * wishList.length)];
+function addLantern(position, wishData, id, isSpecial = false) {
+  const { group: lantern, hitMesh, glow } = createLanternMesh();
+  lantern.position.copy(position);
 
   lantern.userData = {
-    speedY: 0.008 + Math.random() * 0.012,
-    swingSpeed: 0.8 + Math.random() * 1.2,
+    speedY: 0.004 + Math.random() * 0.006,
+    swingSpeed: 0.65 + Math.random() * 0.55,
     initialX: lantern.position.x,
+    initialY: lantern.position.y,
     initialZ: lantern.position.z,
     wish: wishData.text,
+    title: wishData.title,
     imgUrl: wishData.img,
-    id: i,
+    id,
+    isSpecial,
+    isOpened: false,
+    glow,
   };
 
-  const sc = 0.75 + Math.random() * 0.5;
+  const sc = isSpecial ? 1.35 : 0.95 + Math.random() * 0.2;
   lantern.scale.set(sc, sc, sc);
 
   hitMesh.userData.parentLantern = lantern;
@@ -553,6 +623,50 @@ for (let i = 0; i < lanternCount; i++) {
   lanternsGroup.add(lantern);
   lanterns.push(lantern);
   interactiveObjects.push(hitMesh);
+
+  return lantern;
+}
+
+const storyLanternPositions = [
+  new THREE.Vector3(-10, 7, 4),
+  new THREE.Vector3(9, 11, 3),
+  new THREE.Vector3(-13, 17, -5),
+  new THREE.Vector3(13, 5, -7),
+  new THREE.Vector3(-5, 22, -13),
+  new THREE.Vector3(16, 18, -15),
+  new THREE.Vector3(2, 26, -20),
+];
+
+wishList.forEach((wishData, index) => {
+  addLantern(storyLanternPositions[index], wishData, index);
+});
+
+const specialLantern = addLantern(
+  new THREE.Vector3(0, 21, -22),
+  finalWish,
+  wishList.length,
+  true,
+);
+specialLantern.visible = false;
+
+const decorativeLanternCount = isMobile ? 12 : 22;
+for (let index = 0; index < decorativeLanternCount; index++) {
+  const radius = 12 + Math.random() * 25;
+  const angle = Math.random() * Math.PI * 2;
+  const y = -2 + Math.random() * 32;
+  const { group: lantern } = createLanternMesh();
+  lantern.position.set(Math.cos(angle) * radius, y, Math.sin(angle) * radius);
+  lantern.scale.setScalar(0.5 + Math.random() * 0.35);
+  lantern.userData = {
+    speedY: 0.002 + Math.random() * 0.004,
+    swingSpeed: 0.4 + Math.random() * 0.5,
+    initialX: lantern.position.x,
+    initialY: lantern.position.y,
+    initialZ: lantern.position.z,
+    id: index + 20,
+  };
+  lanternsGroup.add(lantern);
+  lanterns.push(lantern);
 }
 
 // FALLING PETALS & STARS
@@ -649,11 +763,49 @@ const mouse = new THREE.Vector2();
 let targetCamPos = null;
 let targetCamTarget = null;
 let selectedLantern = null;
+let finaleActive = false;
+let hoveredLantern = null;
+const openedStoryLanterns = new Set();
 
 const wishModal = document.getElementById("wishModal");
+const wishTitle = document.getElementById("wishTitle");
 const wishText = document.getElementById("wishText");
 const wishImage = document.getElementById("wishImage");
 const closeWishBtn = document.getElementById("closeWishBtn");
+const storyIntro = document.getElementById("storyIntro");
+const exploreStatus = document.getElementById("exploreStatus");
+const finale = document.getElementById("finale");
+
+function updateExploreStatus() {
+  const openedCount = openedStoryLanterns.size;
+  exploreStatus.textContent = `${openedCount} / ${wishList.length} dieu anh muon ke`;
+}
+
+function unlockFinalLantern() {
+  specialLantern.visible = true;
+  specialLantern.userData.initialY = specialLantern.position.y;
+  exploreStatus.textContent = "Mot chiec den cuoi da sang len gan mat trang";
+  document.querySelector(".click-hint").textContent = "Tim chiec den dang sang nhat nhe";
+  createFirework(specialLantern.position);
+}
+
+function beginFinale() {
+  if (finaleActive) return;
+  finaleActive = true;
+  finale.classList.add("is-visible");
+  document.querySelector(".click-hint").textContent = "Cam on bbi da di het the gioi nho nay";
+  exploreStatus.textContent = "Dem Trung Thu cua hai dua";
+  moonGlow.material.opacity = 1;
+  moonMesh.scale.setScalar(1.08);
+
+  targetCamPos = new THREE.Vector3(0, 16, 34);
+  targetCamTarget = moonPosition.clone();
+
+  setTimeout(() => {
+    targetCamPos = DEFAULT_CAM_POS.clone();
+    targetCamTarget = new THREE.Vector3(0, 5.5, 1);
+  }, 5500);
+}
 
 let pointerDownPos = { x: 0, y: 0 };
 
@@ -692,6 +844,7 @@ function onPointerUp(event) {
   if (intersects.length > 0) {
     const hitMesh = intersects[0].object;
     selectedLantern = hitMesh.userData.parentLantern || hitMesh.parent;
+    if (!selectedLantern.visible) return;
     const lPos = selectedLantern.position;
 
     createFirework(lPos);
@@ -703,8 +856,20 @@ function onPointerUp(event) {
     targetCamPos = new THREE.Vector3().addVectors(lPos, offset);
     targetCamTarget = lPos.clone();
 
-    wishText.textContent = `"${selectedLantern.userData.wish}"`;
+    wishTitle.textContent = selectedLantern.userData.title;
+    wishText.textContent = selectedLantern.userData.wish;
     wishImage.src = selectedLantern.userData.imgUrl;
+
+    if (!selectedLantern.userData.isSpecial) {
+      openedStoryLanterns.add(selectedLantern.userData.id);
+      selectedLantern.userData.isOpened = true;
+      updateExploreStatus();
+      if (openedStoryLanterns.size === wishList.length && !specialLantern.visible) {
+        unlockFinalLantern();
+      }
+    } else {
+      beginFinale();
+    }
 
     setTimeout(() => {
       wishModal.classList.add("active");
@@ -714,6 +879,28 @@ function onPointerUp(event) {
 
 window.addEventListener("pointerdown", onPointerDown, { passive: true });
 window.addEventListener("pointerup", onPointerUp, { passive: true });
+
+window.addEventListener("pointermove", (event) => {
+  if (event.target.closest(".top-bar") || event.target.closest(".wish-modal")) return;
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hit = raycaster
+    .intersectObjects(interactiveObjects, false)
+    .find((item) => item.object.userData.parentLantern.visible);
+  const nextHoveredLantern = hit && hit.object.userData.parentLantern;
+
+  if (hoveredLantern && hoveredLantern !== nextHoveredLantern) {
+    hoveredLantern.userData.glow.scale.set(3.2, 3.2, 1);
+    hoveredLantern.userData.glow.material.opacity = 0.7;
+  }
+  if (nextHoveredLantern && nextHoveredLantern !== hoveredLantern) {
+    nextHoveredLantern.userData.glow.scale.set(4.2, 4.2, 1);
+    nextHoveredLantern.userData.glow.material.opacity = 1;
+  }
+  hoveredLantern = nextHoveredLantern || null;
+  renderer.domElement.style.cursor = hit ? "pointer" : "grab";
+});
 
 function resetCamera() {
   targetCamPos = DEFAULT_CAM_POS.clone();
@@ -770,17 +957,30 @@ function animate() {
   const time = clock.getElapsedTime();
 
   lanterns.forEach((lantern) => {
-    lantern.position.y += lantern.userData.speedY;
     lantern.position.x =
       lantern.userData.initialX +
       Math.sin(time * lantern.userData.swingSpeed + lantern.userData.id) * 0.4;
     lantern.position.z =
       lantern.userData.initialZ +
       Math.cos(time * lantern.userData.swingSpeed + lantern.userData.id) * 0.4;
-    lantern.rotation.y += 0.005;
+    lantern.position.y =
+      lantern.userData.initialY +
+      Math.sin(time * lantern.userData.swingSpeed + lantern.userData.id) * 0.22;
+    lantern.rotation.y += 0.003;
 
-    if (lantern.position.y > 30) {
-      lantern.position.y = -3;
+    if (finaleActive && lantern.visible) {
+      const heartIndex = lantern.userData.id % 16;
+      const heartAngle = (heartIndex / 16) * Math.PI * 2;
+      const heartX = 4.8 * Math.pow(Math.sin(heartAngle), 3);
+      const heartY =
+        3.8 * Math.cos(heartAngle) -
+        1.4 * Math.cos(2 * heartAngle) -
+        0.6 * Math.cos(3 * heartAngle) -
+        0.3 * Math.cos(4 * heartAngle);
+      lantern.position.lerp(
+        new THREE.Vector3(moonPosition.x + heartX, moonPosition.y + heartY, moonPosition.z + 3),
+        0.004,
+      );
     }
   });
 
@@ -820,6 +1020,8 @@ function animate() {
   islandGroup.rotation.y = Math.sin(time * 0.15) * 0.05;
 
   updateRabbits(time);
+  coupleGroup.position.y = 4.18 + Math.sin(time * 1.6) * 0.025;
+  treeGroup.rotation.z = Math.sin(time * 0.35) * 0.012;
 
   if (targetCamPos && targetCamTarget) {
     camera.position.lerp(targetCamPos, 0.04);
@@ -835,6 +1037,8 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+updateExploreStatus();
+setTimeout(() => storyIntro.classList.add("is-hidden"), 5200);
 animate();
 
 window.addEventListener("resize", () => {
