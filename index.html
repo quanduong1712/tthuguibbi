@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dem Trung Thu cua hai dua</title>
+    <title>Đêm Trung Thu của hai đứa</title>
 
     <!-- Google Fonts & FontAwesome -->
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
@@ -20,31 +20,34 @@
     </div>
 
     <div class="story-intro" id="storyIntro" aria-live="polite">
-        <p>Anh lam mot noi nho cho bbi.</p>
-        <span>Xoay quanh mot chut nhe...</span>
+        <p>Anh làm một nơi nhỏ cho bbi.</p>
+        <span>Xoay quanh một chút nhé...</span>
     </div>
 
-    <div class="explore-status" id="exploreStatus">0 / 7 dieu anh muon ke</div>
-    <div class="click-hint">Cham vao long den nhe</div>
+    <div class="explore-status" aria-live="polite">
+        <span id="exploreStatus">0 / 7 điều anh muốn kể</span>
+        <span class="explore-track"><span class="explore-fill" id="exploreFill"></span></span>
+    </div>
+    <div class="click-hint">Chạm vào lồng đèn nhé</div>
 
     <div class="wish-modal" id="wishModal">
         <div class="wish-card">
             <button class="close-btn" id="closeWishBtn" aria-label="Đóng"><i class="fas fa-times"></i></button>
-            <h3 id="wishTitle">Thong diep gui bbi</h3>
+            <h3 id="wishTitle">Thông điệp gửi bbi</h3>
             
             <div class="wish-image-container">
                 <img id="wishImage" src="" alt="Hình ảnh Trung Thu">
             </div>
 
-            <p id="wishText">Mot dieu nho anh muon gui den bbi.</p>
-            <div class="tag">Dem Trung Thu cua hai dua</div>
+            <p id="wishText">Một điều nhỏ anh muốn gửi đến bbi.</p>
+            <div class="tag">Đêm Trung Thu của hai đứa</div>
         </div>
     </div>
 
     <div class="finale" id="finale" aria-live="polite">
-        <p>Uoc gi Trung Thu sau...</p>
-        <p>...anh co the that su ngoi canh bbi.</p>
-        <strong>Chuc co gai nho cua anh mot mua Trung Thu that vui.</strong>
+        <p>Ước gì Trung Thu sau...</p>
+        <p>...anh có thể thật sự ngồi cạnh bbi.</p>
+        <strong>Chúc cô gái nhỏ của anh một mùa Trung Thu thật vui.</strong>
     </div>
 
     <audio id="bgm" loop src="./assets/1.mp3"></audio>

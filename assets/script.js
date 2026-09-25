@@ -378,6 +378,7 @@ function createCouple() {
   const bodyGeo = new THREE.SphereGeometry(0.52, 14, 12);
   const headGeo = new THREE.SphereGeometry(0.34, 14, 12);
   const armGeo = new THREE.CylinderGeometry(0.1, 0.12, 1.05, 10);
+  const legGeo = new THREE.CylinderGeometry(0.14, 0.17, 0.88, 10);
 
   addMesh(bodyGeo, boyMat, new THREE.Vector3(0.28, 0.56, 0), new THREE.Vector3(0.9, 1.15, 0.72));
   addMesh(headGeo, skinMat, new THREE.Vector3(0.28, 1.36, 0.06));
@@ -386,6 +387,14 @@ function createCouple() {
   addMesh(bodyGeo, girlMat, new THREE.Vector3(-0.38, 0.5, 0.14), new THREE.Vector3(0.82, 1.04, 0.7));
   addMesh(headGeo, skinMat, new THREE.Vector3(-0.36, 1.25, 0.12));
   addMesh(new THREE.SphereGeometry(0.39, 14, 10), hairMat, new THREE.Vector3(-0.42, 1.4, 0.03), new THREE.Vector3(1.1, 1.08, 1.05));
+  addMesh(new THREE.SphereGeometry(0.16, 10, 8), hairMat, new THREE.Vector3(-0.66, 1.1, 0.06), new THREE.Vector3(0.85, 1.6, 0.8));
+
+  const boyLeg = addMesh(legGeo, boyMat, new THREE.Vector3(0.48, 0.08, 0.32));
+  boyLeg.rotation.x = Math.PI / 2.5;
+  const girlLeg = addMesh(legGeo, girlMat, new THREE.Vector3(-0.48, 0.08, 0.36));
+  girlLeg.rotation.x = Math.PI / 2.35;
+  addMesh(new THREE.SphereGeometry(0.16, 10, 8), hairMat, new THREE.Vector3(0.76, -0.02, 0.68), new THREE.Vector3(1.35, 0.6, 1));
+  addMesh(new THREE.SphereGeometry(0.16, 10, 8), hairMat, new THREE.Vector3(-0.72, -0.02, 0.72), new THREE.Vector3(1.35, 0.6, 1));
 
   const pointingArm = addMesh(armGeo, boyMat, new THREE.Vector3(0.8, 1.24, 0.04));
   pointingArm.rotation.z = -1.05;
@@ -400,7 +409,8 @@ function createCouple() {
   hugArm.rotation.x = 0.45;
 
   couple.position.set(0, 4.18, 1.28);
-  couple.rotation.y = Math.PI;
+  couple.rotation.y = Math.atan2(moonPosition.x - couple.position.x, moonPosition.z - couple.position.z);
+  couple.scale.setScalar(1.35);
   return couple;
 }
 
@@ -485,46 +495,46 @@ const interactiveObjects = [];
 
 const wishList = [
   {
-    title: "Trung Thu vui ve nha bbi",
-    text: "Hi lu co gai nho cua anh. Trung Thu nay anh khong co mon qua gi qua to, cung chua the chay toi ben canh om bbi mot cai. Nen anh lam cho bbi mot the gioi nho xiu nay. Mong bbi se thich no nha. Chuc co gai cua anh co mot mua Trung Thu that vui, that binh yen va luc nao cung duoc yeu thuong that nhieu.",
+    title: "Trung Thu vui vẻ nha bbi",
+    text: "Hí lu cô gái nhỏ của anh. Trung Thu này anh không có món quà gì quá to, cũng chưa thể chạy tới bên cạnh ôm bbi một cái. Nên anh làm cho bbi một thế giới nhỏ xíu này. Mong bbi sẽ thích nó nha. Chúc cô gái của anh có một mùa Trung Thu thật vui, thật bình yên và lúc nào cũng được yêu thương thật nhiều.",
     img: "./assets/photo-1.jpg",
   },
   {
-    title: "Dieu anh mong nhat",
-    text: "Anh mong bbi luon vui ve, an uong day du, ngu that ngon va dung vi nhung chuyen khong vui ma lam ban than minh met moi nha. Neu co ngay nao bbi buon, thi nho la van co mot nguoi luon thuong bbi rat nhieu.",
+    title: "Điều anh mong nhất",
+    text: "Anh mong bbi luôn vui vẻ, ăn uống đầy đủ, ngủ thật ngon và đừng vì những chuyện không vui mà làm bản thân mình mệt mỏi nha. Nếu có ngày nào bbi buồn, thì nhớ là vẫn có một người luôn thương bbi rất nhiều.",
     img: "./assets/photo-2.jpg",
   },
   {
-    title: "Neu hom nay anh o canh bbi...",
-    text: "Neu hom nay anh o canh bbi, anh se mua cho bbi mot cai banh Trung Thu that ngon. Roi hai dua se tim mot cho that yen, ngoi canh nhau, ngam trang, noi linh tinh ca toi. Co the chang can lam gi dac biet. Chi can duoc ngoi canh bbi thoi la anh vui roi.",
-    img: "./assets/photo-3.jpg",
-  },
-  {
-    title: "Anh nho bbi",
-    text: "Co nhung luc anh cung nho bbi nhieu lam. Nho nhung luc duoc o canh nhau, nho luc bbi cuoi, nho nhung luc bbi lam nung, nho ca nhung dieu nho xiu ma binh thuong anh chang de y. Khoang cach doi khi lam anh thay kho chiu that. Nhung anh van muon co gang, vi nguoi anh muon di cung van la bbi.",
+    title: "Nếu hôm nay anh ở cạnh bbi...",
+    text: "Nếu hôm nay anh ở cạnh bbi, anh sẽ mua cho bbi một cái bánh Trung Thu thật ngon. Rồi hai đứa sẽ tìm một chỗ thật yên, ngồi cạnh nhau, ngắm trăng, nói linh tinh cả tối. Có thể chẳng cần làm gì đặc biệt. Chỉ cần được ngồi cạnh bbi thôi là anh vui rồi.",
     img: "./assets/photo-4.jpg",
   },
   {
-    title: "Dieu anh muon cung bbi",
-    text: "Anh khong mong moi thu luc nao cung hoan hao. Anh chi mong hai dua minh co the cung nhau co gang. Cung truong thanh. Cung kiem tien. Cung xay dung cuoc song ma hai dua mong muon. Roi mot ngay, Trung Thu khong con la nhung cuoc goi hay nhung dong tin nhan nua, ma la hai dua that su ngoi canh nhau duoi anh trang.",
+    title: "Anh nhớ bbi",
+    text: "Có những lúc anh cũng nhớ bbi nhiều lắm. Nhớ những lúc được ở cạnh nhau, nhớ lúc bbi cười, nhớ những lúc bbi làm nũng, nhớ cả những điều nhỏ xíu mà bình thường anh chẳng để ý. Khoảng cách đôi khi làm anh thấy khó chịu thật. Nhưng anh vẫn muốn cố gắng, vì người anh muốn đi cùng vẫn là bbi.",
     img: "./assets/photo-5.jpg",
   },
   {
-    title: "Neu bbi dang buon...",
-    text: "Neu luc mo chiec den nay bbi dang buon, thi lai day anh om mot cai nha. Anh khong biet luc nao minh cung co the giai quyet duoc moi chuyen cho bbi. Nhung anh muon bbi biet rang bbi khong can phai manh me mot minh. Co chuyen gi thi cu tu tu. Met thi nghi. Buon thi cu buon mot chut. Roi minh lai cung nhau co gang tiep nha.",
+    title: "Điều anh muốn cùng bbi",
+    text: "Anh không mong mọi thứ lúc nào cũng hoàn hảo. Anh chỉ mong hai đứa mình có thể cùng nhau cố gắng. Cùng trưởng thành. Cùng kiếm tiền. Cùng xây dựng cuộc sống mà hai đứa mong muốn. Rồi một ngày, Trung Thu không còn là những cuộc gọi hay những dòng tin nhắn nữa, mà là hai đứa thật sự ngồi cạnh nhau dưới ánh trăng.",
     img: "./assets/photo-6.jpg",
   },
   {
-    title: "Mot loi chuc cho bbi",
-    text: "Anh chuc co gai nho cua anh luon khoe manh, luon binh an, luon duoc yeu thuong. Cong viec thuan loi, nhung dieu bbi co gang deu co ket qua. Nhung ngay buon se ngay cang it di va nhung ngay vui se ngay cang nhieu hon. Bbi xung dang voi nhung dieu that diu dang.",
+    title: "Nếu bbi đang buồn...",
+    text: "Nếu lúc mở chiếc đèn này bbi đang buồn, thì lại đây anh ôm một cái nha. Anh không biết lúc nào mình cũng có thể giải quyết được mọi chuyện cho bbi. Nhưng anh muốn bbi biết rằng bbi không cần phải mạnh mẽ một mình. Có chuyện gì thì cứ từ từ. Mệt thì nghỉ. Buồn thì cứ buồn một chút. Rồi mình lại cùng nhau cố gắng tiếp nha.",
     img: "./assets/photo-1.jpg",
+  },
+  {
+    title: "Một lời chúc cho bbi",
+    text: "Anh chúc cô gái nhỏ của anh luôn khỏe mạnh, luôn bình an, luôn được yêu thương. Công việc thuận lợi, những điều bbi cố gắng đều có kết quả. Những ngày buồn sẽ ngày càng ít đi và những ngày vui sẽ ngày càng nhiều hơn. Bbi xứng đáng với những điều thật dịu dàng.",
+    img: "./assets/photo-2.jpg",
   },
 ];
 
 const finalWish = {
-  title: "Dieu anh muon noi nhat",
-  text: "Trung Thu nay, anh khong the ngoi canh bbi duoi anh trang. Nhung anh van muon danh cho bbi mot dieu gi do that rieng. Anh khong biet tuong lai se co nhung chuyen gi, cung khong biet moi thu se luon de dang nhu the nao. Nhung anh biet mot dieu: anh van muon co gang de co the cung bbi di that lau. De sau nay, nhung chiec den long nay khong con la thu anh phai lam tren mot chiec may tinh nua, ma la hai dua that su ngoi canh nhau, duoi mot bau troi, ngam cung mot mat trang. Trung Thu vui ve nha co vo nho cua anh. Anh thuong bbi nhieu lam.",
-  img: "./assets/photo-2.jpg",
+  title: "Điều anh muốn nói nhất",
+  text: "Trung Thu này, anh không thể ngồi cạnh bbi dưới ánh trăng. Nhưng anh vẫn muốn dành cho bbi một điều gì đó thật riêng. Anh không biết tương lai sẽ có những chuyện gì, cũng không biết mọi thứ sẽ luôn dễ dàng như thế nào. Nhưng anh biết một điều: anh vẫn muốn cố gắng để có thể cùng bbi đi thật lâu. Để sau này, những chiếc đèn lồng này không còn là thứ anh phải làm trên một chiếc máy tính nữa, mà là hai đứa thật sự ngồi cạnh nhau, dưới một bầu trời, ngắm cùng một mặt trăng. Trung Thu vui vẻ nha cô vợ nhỏ của anh. Anh thương bbi nhiều lắm.",
+  img: "./assets/photo-3.jpg",
 };
 
 function createLanternTexture() {
@@ -593,11 +603,11 @@ function createLanternMesh() {
   const hitMesh = new THREE.Mesh(hitGeo, hitMat);
   group.add(hitMesh);
 
-  return { group, hitMesh, glow };
+  return { group, hitMesh, glow, body };
 }
 
 function addLantern(position, wishData, id, isSpecial = false) {
-  const { group: lantern, hitMesh, glow } = createLanternMesh();
+  const { group: lantern, hitMesh, glow, body } = createLanternMesh();
   lantern.position.copy(position);
 
   lantern.userData = {
@@ -613,6 +623,7 @@ function addLantern(position, wishData, id, isSpecial = false) {
     isSpecial,
     isOpened: false,
     glow,
+    body,
   };
 
   const sc = isSpecial ? 1.35 : 0.95 + Math.random() * 0.2;
@@ -648,6 +659,9 @@ const specialLantern = addLantern(
   true,
 );
 specialLantern.visible = false;
+specialLantern.userData.glow.scale.set(7, 7, 1);
+specialLantern.userData.glow.material.opacity = 1;
+specialLantern.userData.body.material.emissiveIntensity = 2.8;
 
 const decorativeLanternCount = isMobile ? 12 : 22;
 for (let index = 0; index < decorativeLanternCount; index++) {
@@ -774,18 +788,21 @@ const wishImage = document.getElementById("wishImage");
 const closeWishBtn = document.getElementById("closeWishBtn");
 const storyIntro = document.getElementById("storyIntro");
 const exploreStatus = document.getElementById("exploreStatus");
+const exploreFill = document.getElementById("exploreFill");
 const finale = document.getElementById("finale");
 
 function updateExploreStatus() {
   const openedCount = openedStoryLanterns.size;
-  exploreStatus.textContent = `${openedCount} / ${wishList.length} dieu anh muon ke`;
+  exploreStatus.textContent = `${openedCount} / ${wishList.length} điều anh muốn kể`;
+  exploreFill.style.width = `${(openedCount / wishList.length) * 100}%`;
 }
 
 function unlockFinalLantern() {
   specialLantern.visible = true;
   specialLantern.userData.initialY = specialLantern.position.y;
-  exploreStatus.textContent = "Mot chiec den cuoi da sang len gan mat trang";
-  document.querySelector(".click-hint").textContent = "Tim chiec den dang sang nhat nhe";
+  exploreStatus.textContent = "Chiếc đèn cuối đã sáng lên gần mặt trăng";
+  exploreFill.style.width = "100%";
+  document.querySelector(".click-hint").textContent = "Tìm chiếc đèn đang sáng rực nhất nhé";
   createFirework(specialLantern.position);
 }
 
@@ -793,8 +810,8 @@ function beginFinale() {
   if (finaleActive) return;
   finaleActive = true;
   finale.classList.add("is-visible");
-  document.querySelector(".click-hint").textContent = "Cam on bbi da di het the gioi nho nay";
-  exploreStatus.textContent = "Dem Trung Thu cua hai dua";
+  document.querySelector(".click-hint").textContent = "Cảm ơn bbi đã đi hết thế giới nhỏ này";
+  exploreStatus.textContent = "Đêm Trung Thu của hai đứa";
   moonGlow.material.opacity = 1;
   moonMesh.scale.setScalar(1.08);
 
@@ -967,6 +984,12 @@ function animate() {
       lantern.userData.initialY +
       Math.sin(time * lantern.userData.swingSpeed + lantern.userData.id) * 0.22;
     lantern.rotation.y += 0.003;
+
+    if (lantern.userData.isSpecial && lantern.visible) {
+      const glowScale = 7 + Math.sin(time * 3.5) * 1.1;
+      lantern.userData.glow.scale.set(glowScale, glowScale, 1);
+      lantern.userData.glow.material.opacity = 0.82 + Math.sin(time * 3.5) * 0.18;
+    }
 
     if (finaleActive && lantern.visible) {
       const heartIndex = lantern.userData.id % 16;

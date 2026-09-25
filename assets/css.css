@@ -84,6 +84,29 @@ html {
   pointer-events: none;
 }
 
+.explore-status > span:first-child {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.explore-track {
+  display: block;
+  width: 142px;
+  height: 3px;
+  overflow: hidden;
+  background: rgba(255, 245, 220, 0.2);
+  border-radius: 2px;
+}
+
+.explore-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: #ffe0a1;
+  box-shadow: 0 0 8px rgba(255, 215, 143, 0.9);
+  transition: width 0.45s ease;
+}
+
 .finale {
   bottom: 13%;
   width: min(90%, 560px);
