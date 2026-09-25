@@ -16,9 +16,9 @@ const camera = new THREE.PerspectiveCamera(
 );
 
 const DEFAULT_CAM_POS = isMobile
-  ? new THREE.Vector3(0, 12, 45)
-  : new THREE.Vector3(0, 10, 40);
-const DEFAULT_CAM_TARGET = new THREE.Vector3(0, 6.0, 0);
+  ? new THREE.Vector3(0, 9, 34)
+  : new THREE.Vector3(0, 8, 35);
+const DEFAULT_CAM_TARGET = new THREE.Vector3(0, 6.2, 0.5);
 
 camera.position.copy(DEFAULT_CAM_POS);
 
@@ -30,27 +30,27 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.25;
+renderer.toneMappingExposure = 0.95;
 container.appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.maxPolarAngle = Math.PI / 2 + 0.05;
-controls.minDistance = 8;
-controls.maxDistance = 85;
+controls.minDistance = 13;
+controls.maxDistance = 46;
 controls.target.copy(DEFAULT_CAM_TARGET);
 
 // LIGHTS
-const ambientLight = new THREE.AmbientLight(0x30264d, 1.25);
+const ambientLight = new THREE.AmbientLight(0x212942, 1.15);
 scene.add(ambientLight);
 
-const treeLight = new THREE.PointLight(0xffb6c1, 2.5, 45);
-treeLight.position.set(0, 8, 0);
+const treeLight = new THREE.PointLight(0xffcbd2, 2.1, 34);
+treeLight.position.set(-3, 9, 4);
 scene.add(treeLight);
 
-const warmLight = new THREE.PointLight(0xffaa33, 2.0, 30);
-warmLight.position.set(0, -2, 0);
+const warmLight = new THREE.PointLight(0xffb52e, 1.35, 24);
+warmLight.position.set(-3, 6, 5);
 scene.add(warmLight);
 
 // MOON & MOONLIGHT
@@ -98,7 +98,7 @@ function createMoonGlowTexture() {
   return new THREE.CanvasTexture(canvas);
 }
 
-const moonPosition = new THREE.Vector3(-15, 20, -30);
+const moonPosition = new THREE.Vector3(6.5, 14.2, -19);
 const moonGlow = new THREE.Sprite(
   new THREE.SpriteMaterial({
     map: createMoonGlowTexture(),
@@ -109,11 +109,11 @@ const moonGlow = new THREE.Sprite(
 );
 moonGlow.position.copy(moonPosition);
 moonGlow.position.z -= 0.5;
-moonGlow.scale.set(18, 18, 1);
+moonGlow.scale.set(13, 13, 1);
 scene.add(moonGlow);
 
 const moonMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(5.3, isMobile ? 32 : 48, isMobile ? 20 : 32),
+  new THREE.SphereGeometry(3.8, isMobile ? 32 : 48, isMobile ? 20 : 32),
   new THREE.MeshBasicMaterial({ map: createMoonTexture() }),
 );
 moonMesh.position.copy(moonPosition);
@@ -128,9 +128,9 @@ const islandGroup = new THREE.Group();
 scene.add(islandGroup);
 
 const islandGeo = new THREE.CylinderGeometry(
-  8.5,
-  2.2,
-  7.5,
+  11.4,
+  5.4,
+  6.2,
   isMobile ? 32 : 48,
   12,
 );
@@ -155,14 +155,14 @@ for (let i = 0; i < posAttr.count; i++) {
 islandGeo.computeVertexNormals();
 
 const islandMat = new THREE.MeshStandardMaterial({
-  color: 0x3d231b,
+  color: 0x1b2925,
   roughness: 0.85,
   flatShading: true,
 });
 const islandMesh = new THREE.Mesh(islandGeo, islandMat);
 islandGroup.add(islandMesh);
 
-const topGeo = new THREE.CylinderGeometry(8.6, 7.8, 0.8, isMobile ? 32 : 48, 4);
+const topGeo = new THREE.CylinderGeometry(11.6, 10.2, 0.72, isMobile ? 32 : 48, 4);
 const topPos = topGeo.attributes.position;
 for (let i = 0; i < topPos.count; i++) {
   const vx = topPos.getX(i);
@@ -173,38 +173,38 @@ for (let i = 0; i < topPos.count; i++) {
 }
 topGeo.computeVertexNormals();
 const topMat = new THREE.MeshStandardMaterial({
-  color: 0x22130e,
+  color: 0x1e382c,
   roughness: 0.9,
   flatShading: true,
 });
 const topMesh = new THREE.Mesh(topGeo, topMat);
-topMesh.position.y = 3.6;
+topMesh.position.y = 3.3;
 islandGroup.add(topMesh);
 
 // BỆ MẶT ĐÁ NHỎ & ĐÁ TẢNG RẢI RÁC ÍT HƠN
 const stoneMat = new THREE.MeshStandardMaterial({
-  color: 0x4a4d52,
+  color: 0x3b4946,
   roughness: 0.85,
   metalness: 0.1,
   flatShading: true,
 });
 
 // 1. Bệ đá nhỏ dẹt ẩn nhẹ dưới gốc cây
-const mainStonePlatformGeo = new THREE.CylinderGeometry(2.5, 3.0, 0.15, 6);
+const mainStonePlatformGeo = new THREE.CylinderGeometry(3.4, 3.8, 0.15, 7);
 const mainStonePlatform = new THREE.Mesh(mainStonePlatformGeo, stoneMat);
-mainStonePlatform.position.set(0, 3.9, 0);
+mainStonePlatform.position.set(0, 3.7, 0);
 islandGroup.add(mainStonePlatform);
 
 // 2. Chỉ 3 viên đá nhỏ điểm xuyết trên mặt đất
-const rockCount = 3;
+const rockCount = 9;
 for (let i = 0; i < rockCount; i++) {
   const rockGeo = new THREE.DodecahedronGeometry(0.2 + Math.random() * 0.25, 0);
   const rockMesh = new THREE.Mesh(rockGeo, stoneMat);
 
   const angle = (i / rockCount) * Math.PI * 2 + 0.5;
-  const dist = 3.8 + Math.random() * 2.0;
+  const dist = 4.6 + Math.random() * 4.3;
 
-  rockMesh.position.set(Math.cos(angle) * dist, 3.9, Math.sin(angle) * dist);
+  rockMesh.position.set(Math.cos(angle) * dist, 3.72, Math.sin(angle) * dist);
   rockMesh.rotation.set(
     Math.random() * Math.PI,
     Math.random() * Math.PI,
@@ -213,9 +213,69 @@ for (let i = 0; i < rockCount; i++) {
   islandGroup.add(rockMesh);
 }
 
+// GARDEN VEGETATION
+const gardenGroup = new THREE.Group();
+islandGroup.add(gardenGroup);
+const grassMat = new THREE.MeshStandardMaterial({ color: 0x48634a, roughness: 0.95 });
+const lightGrassMat = new THREE.MeshStandardMaterial({ color: 0x78915c, roughness: 0.95 });
+const pinkFlowerMat = new THREE.MeshStandardMaterial({ color: 0xe8b8c8, roughness: 0.75 });
+const creamFlowerMat = new THREE.MeshStandardMaterial({ color: 0xf7e8c5, roughness: 0.75 });
+const mossMat = new THREE.MeshStandardMaterial({ color: 0x334d3b, roughness: 0.95 });
+const rootMat = new THREE.MeshStandardMaterial({ color: 0x2b140e, roughness: 0.9 });
+
+function addGardenCluster(angle, distance, scale) {
+  const cluster = new THREE.Group();
+  cluster.position.set(Math.cos(angle) * distance, 3.75, Math.sin(angle) * distance);
+  cluster.rotation.y = angle + Math.PI / 2;
+  cluster.scale.setScalar(scale);
+
+  for (let bladeIndex = 0; bladeIndex < 8; bladeIndex++) {
+    const blade = new THREE.Mesh(
+      new THREE.ConeGeometry(0.055, 0.18 + Math.random() * 0.2, 4),
+      bladeIndex % 3 ? grassMat : lightGrassMat,
+    );
+    blade.position.set((Math.random() - 0.5) * 1.35, blade.geometry.parameters.height / 2, (Math.random() - 0.5) * 0.85);
+    blade.rotation.z = (Math.random() - 0.5) * 0.3;
+    cluster.add(blade);
+  }
+
+  for (let flowerIndex = 0; flowerIndex < 3; flowerIndex++) {
+    const flower = new THREE.Group();
+    flower.position.set((Math.random() - 0.5) * 1.1, 0.16 + Math.random() * 0.12, (Math.random() - 0.5) * 0.65);
+    const petalMat = flowerIndex % 2 ? pinkFlowerMat : creamFlowerMat;
+    for (let petalIndex = 0; petalIndex < 5; petalIndex++) {
+      const petal = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 6), petalMat);
+      petal.position.set(Math.cos((petalIndex / 5) * Math.PI * 2) * 0.12, 0, Math.sin((petalIndex / 5) * Math.PI * 2) * 0.12);
+      petal.scale.set(1.2, 0.45, 0.8);
+      flower.add(petal);
+    }
+    flower.add(new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), new THREE.MeshStandardMaterial({ color: 0xffd17a, roughness: 0.7 })));
+    cluster.add(flower);
+  }
+  gardenGroup.add(cluster);
+}
+
+for (let gardenIndex = 0; gardenIndex < (isMobile ? 24 : 38); gardenIndex++) {
+  const angle = (gardenIndex / (isMobile ? 24 : 38)) * Math.PI * 2 + Math.random() * 0.28;
+  const distance = 5.3 + Math.random() * 4.7;
+  addGardenCluster(angle, distance, 0.7 + Math.random() * 0.65);
+}
+
+for (let rootIndex = 0; rootIndex < 5; rootIndex++) {
+  const rootAngle = rootIndex * ((Math.PI * 2) / 5) + 0.35;
+  const rootCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(Math.cos(rootAngle) * 0.25, 0.15, Math.sin(rootAngle) * 0.25),
+    new THREE.Vector3(Math.cos(rootAngle) * 1.2, -0.06, Math.sin(rootAngle) * 1.2),
+    new THREE.Vector3(Math.cos(rootAngle) * 2.2, -0.12, Math.sin(rootAngle) * 2.2),
+  ]);
+  const root = new THREE.Mesh(new THREE.TubeGeometry(rootCurve, 10, 0.1, 6, false), rootMat);
+  root.position.y = 3.72;
+  gardenGroup.add(root);
+}
+
 // TREE TRUNK & BRANCHES
 const treeGroup = new THREE.Group();
-treeGroup.position.set(0, 4.0, 0);
+treeGroup.position.set(0, 3.8, -0.55);
 islandGroup.add(treeGroup);
 
 const trunkMat = new THREE.MeshStandardMaterial({
@@ -259,8 +319,44 @@ for (let i = 0; i < mainBranchCount; i++) {
   branchClusters.push({ center: endP, radius: 3.2 + Math.random() * 1.0 });
 }
 
-// HỆ THỐNG TÁN LÁ
-const particleCount = isMobile ? 22000 : 38000;
+// LAYERED STYLIZED FOLIAGE
+const foliageGroup = new THREE.Group();
+treeGroup.add(foliageGroup);
+const foliageMats = [
+  new THREE.MeshStandardMaterial({ color: 0x263b32, roughness: 0.95, flatShading: true }),
+  new THREE.MeshStandardMaterial({ color: 0x405840, roughness: 0.95, flatShading: true }),
+  new THREE.MeshStandardMaterial({ color: 0x69704b, roughness: 0.95, flatShading: true }),
+  new THREE.MeshStandardMaterial({ color: 0xd99bab, roughness: 0.88, flatShading: true }),
+];
+
+const foliageCenters = [
+  new THREE.Vector3(-2.8, 7.1, 0.5),
+  new THREE.Vector3(1.6, 8.0, -0.3),
+  new THREE.Vector3(0.5, 9.8, 0),
+  new THREE.Vector3(-0.8, 6.0, 1.3),
+  ...branchClusters.map((cluster) => cluster.center),
+];
+
+foliageCenters.forEach((center, centerIndex) => {
+  const count = centerIndex < 4 ? 9 : 4;
+  for (let leafIndex = 0; leafIndex < count; leafIndex++) {
+    const leaf = new THREE.Mesh(
+      new THREE.SphereGeometry(0.6 + Math.random() * 0.65, 10, 8),
+      foliageMats[(leafIndex + centerIndex) % foliageMats.length],
+    );
+    leaf.position.copy(center).add(new THREE.Vector3(
+      (Math.random() - 0.5) * 2.4,
+      (Math.random() - 0.5) * 1.7,
+      (Math.random() - 0.5) * 2.2,
+    ));
+    leaf.scale.set(1.25, 0.58 + Math.random() * 0.2, 1.05);
+    leaf.rotation.set(Math.random(), Math.random(), Math.random());
+    foliageGroup.add(leaf);
+  }
+});
+
+// Subtle blossom dust gives the canopy depth without becoming the canopy itself.
+const particleCount = isMobile ? 900 : 1700;
 const blossomGeo = new THREE.BufferGeometry();
 const blossomPos = new Float32Array(particleCount * 3);
 const blossomColors = new Float32Array(particleCount * 3);
@@ -346,6 +442,63 @@ const blossomMat = new THREE.PointsMaterial({
 
 const blossomParticles = new THREE.Points(blossomGeo, blossomMat);
 treeGroup.add(blossomParticles);
+treeGroup.visible = false;
+
+// HERO TREE: a composed trunk and layered foliage replace the inherited particle canopy.
+const storyTreeGroup = new THREE.Group();
+storyTreeGroup.position.set(-1.35, 3.72, -1.35);
+islandGroup.add(storyTreeGroup);
+
+const heroTrunkMat = new THREE.MeshStandardMaterial({ color: 0x3b241c, roughness: 0.9 });
+const heroBranchMat = new THREE.MeshStandardMaterial({ color: 0x4c2c20, roughness: 0.9 });
+const heroLeafMats = [
+  new THREE.MeshStandardMaterial({ color: 0x263b32, roughness: 0.95 }),
+  new THREE.MeshStandardMaterial({ color: 0x385342, roughness: 0.95 }),
+  new THREE.MeshStandardMaterial({ color: 0x63724e, roughness: 0.95 }),
+  new THREE.MeshStandardMaterial({ color: 0xd69cab, roughness: 0.88 }),
+];
+
+const heroTrunkCurve = new THREE.CatmullRomCurve3([
+  new THREE.Vector3(0, 0, 0),
+  new THREE.Vector3(-0.55, 2.4, 0.05),
+  new THREE.Vector3(-0.15, 4.9, -0.1),
+  new THREE.Vector3(-1.05, 7.5, -0.2),
+]);
+storyTreeGroup.add(new THREE.Mesh(new THREE.TubeGeometry(heroTrunkCurve, 36, 0.44, 10, false), heroTrunkMat));
+
+const heroBranches = [
+  [new THREE.Vector3(-0.35, 3.2, 0), new THREE.Vector3(-2.6, 5.6, 0.4), new THREE.Vector3(-4.1, 6.2, 0.1)],
+  [new THREE.Vector3(-0.15, 4.2, 0), new THREE.Vector3(1.65, 6.15, -0.3), new THREE.Vector3(3.25, 6.55, -0.7)],
+  [new THREE.Vector3(-0.55, 5.1, 0), new THREE.Vector3(-2.3, 7.1, -0.4), new THREE.Vector3(-3.25, 7.45, -0.1)],
+  [new THREE.Vector3(-0.75, 5.8, 0), new THREE.Vector3(0.6, 7.7, 0.15), new THREE.Vector3(1.7, 8.1, 0)],
+  [new THREE.Vector3(-0.95, 6.6, 0), new THREE.Vector3(-2.15, 8.2, 0.25), new THREE.Vector3(-3.1, 8.45, 0.2)],
+];
+heroBranches.forEach((points, index) => {
+  storyTreeGroup.add(new THREE.Mesh(
+    new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 18, 0.2 - index * 0.012, 8, false),
+    heroBranchMat,
+  ));
+});
+
+const heroCanopyCenters = [
+  [-3.45, 7.15, 2.2, 1.0, 1.4], [-2.0, 8.35, 2.45, 1.1, 1.5],
+  [-0.25, 8.6, 2.55, 1.15, 1.5], [1.75, 7.5, 2.2, 1.0, 1.45],
+  [-3.1, 5.9, 1.7, 0.82, 1.15], [-0.4, 6.65, 2.25, 0.9, 1.3],
+  [2.65, 6.45, 1.65, 0.78, 1.05], [-1.1, 9.45, 1.5, 0.7, 0.95],
+];
+heroCanopyCenters.forEach(([x, y, width, height, depth], index) => {
+  const canopy = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 14), heroLeafMats[index % heroLeafMats.length]);
+  canopy.position.set(x, y, (index % 3 - 1) * 0.35);
+  canopy.scale.set(width, height, depth);
+  storyTreeGroup.add(canopy);
+});
+
+for (let bloomIndex = 0; bloomIndex < 28; bloomIndex++) {
+  const center = heroCanopyCenters[bloomIndex % heroCanopyCenters.length];
+  const bloom = new THREE.Mesh(new THREE.SphereGeometry(0.12 + Math.random() * 0.08, 8, 6), heroLeafMats[3]);
+  bloom.position.set(center[0] + (Math.random() - 0.5) * center[2] * 1.5, center[1] + (Math.random() - 0.5) * center[3] * 1.5, 0.85 + Math.random() * 0.35);
+  storyTreeGroup.add(bloom);
+}
 
 // TWO PEOPLE UNDER THE TREE
 function createCouple() {
@@ -432,9 +585,9 @@ function createCouple() {
   addLimb(new THREE.Vector3(-0.2, 1.08, 0.5), new THREE.Vector3(0.1, 1.0, 0.48), 0.08, skinMat);
   addLimb(new THREE.Vector3(-0.15, 0.99, 0.3), new THREE.Vector3(0.05, 0.86, 0.45), 0.085, dressMat);
 
-  couple.position.set(0, 4.2, 1.55);
+  couple.position.set(1.3, 3.95, 2.3);
   couple.rotation.y = Math.atan2(moonPosition.x - couple.position.x, moonPosition.z - couple.position.z);
-  couple.scale.setScalar(1.72);
+  couple.scale.setScalar(1.62);
   const rimLight = new THREE.PointLight(0xffd9bd, 0.8, 7);
   rimLight.position.set(-1.8, 3.2, 2.8);
   couple.add(rimLight);
@@ -479,7 +632,7 @@ function createRabbit() {
 }
 
 const rabbits = [];
-for (let i = 0; i < 4; i++) {
+for (let i = 0; i < 1; i++) {
   const rabbitMesh = createRabbit();
   islandGroup.add(rabbitMesh);
 
@@ -487,11 +640,11 @@ for (let i = 0; i < 4; i++) {
     mesh: rabbitMesh,
     orbitRadius: 2.8 + Math.random() * 3.2,
     orbitSpeed: (0.12 + Math.random() * 0.15) * (i % 2 === 0 ? 1 : -1),
-    phase: (i / 4) * Math.PI * 2,
+    phase: -1.15,
     baseY: 4.05,
     hopSpeed: 4.5 + Math.random() * 2.0,
     hopHeight: 0.15,
-    scale: 0.75 + Math.random() * 0.25,
+    scale: 0.85,
   });
   rabbits[i].mesh.scale.setScalar(rabbits[i].scale);
 }
@@ -653,7 +806,7 @@ function addLantern(position, wishData, id, isSpecial = false) {
     body,
   };
 
-  const sc = isSpecial ? 1.35 : 0.95 + Math.random() * 0.2;
+  const sc = isSpecial ? 1.05 : 0.62 + Math.random() * 0.12;
   lantern.scale.set(sc, sc, sc);
 
   hitMesh.userData.parentLantern = lantern;
@@ -666,13 +819,13 @@ function addLantern(position, wishData, id, isSpecial = false) {
 }
 
 const storyLanternPositions = [
-  new THREE.Vector3(-10, 7, 4),
-  new THREE.Vector3(9, 11, 3),
-  new THREE.Vector3(-13, 17, -5),
-  new THREE.Vector3(13, 5, -7),
-  new THREE.Vector3(-5, 22, -13),
-  new THREE.Vector3(16, 18, -15),
-  new THREE.Vector3(2, 26, -20),
+  new THREE.Vector3(-12, 7, 5),
+  new THREE.Vector3(11, 11, 2),
+  new THREE.Vector3(-14, 15, -9),
+  new THREE.Vector3(14, 6, -8),
+  new THREE.Vector3(-7, 19, -16),
+  new THREE.Vector3(15, 16, -16),
+  new THREE.Vector3(4, 22, -21),
 ];
 
 wishList.forEach((wishData, index) => {
@@ -680,7 +833,7 @@ wishList.forEach((wishData, index) => {
 });
 
 const specialLantern = addLantern(
-  new THREE.Vector3(0, 21, -22),
+  new THREE.Vector3(-2, 18, -21),
   finalWish,
   wishList.length,
   true,
@@ -690,9 +843,9 @@ specialLantern.userData.glow.scale.set(7, 7, 1);
 specialLantern.userData.glow.material.opacity = 1;
 specialLantern.userData.body.material.emissiveIntensity = 2.8;
 
-const decorativeLanternCount = isMobile ? 12 : 22;
+const decorativeLanternCount = isMobile ? 3 : 5;
 for (let index = 0; index < decorativeLanternCount; index++) {
-  const radius = 12 + Math.random() * 25;
+  const radius = 17 + Math.random() * 18;
   const angle = Math.random() * Math.PI * 2;
   const y = -2 + Math.random() * 32;
   const { group: lantern } = createLanternMesh();
@@ -750,10 +903,10 @@ for (let i = 0; i < starCount; i++) {
 }
 starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
 const starMat = new THREE.PointsMaterial({
-  color: 0xffffff,
-  size: 0.4,
+  color: 0xf7e8c5,
+  size: 0.28,
   transparent: true,
-  opacity: 0.7,
+  opacity: 0.78,
 });
 scene.add(new THREE.Points(starGeo, starMat));
 
