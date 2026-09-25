@@ -5,7 +5,8 @@ const isMobile =
   ) || window.innerWidth < 768;
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x060312, 0.008);
+scene.background = new THREE.Color(0x030515);
+scene.fog = new THREE.FogExp2(0x080b21, 0.0075);
 
 const camera = new THREE.PerspectiveCamera(
   isMobile ? 60 : 45,
@@ -41,7 +42,7 @@ controls.maxDistance = 85;
 controls.target.copy(DEFAULT_CAM_TARGET);
 
 // LIGHTS
-const ambientLight = new THREE.AmbientLight(0x2a103d, 1.4);
+const ambientLight = new THREE.AmbientLight(0x30264d, 1.25);
 scene.add(ambientLight);
 
 const treeLight = new THREE.PointLight(0xffb6c1, 2.5, 45);
@@ -51,6 +52,76 @@ scene.add(treeLight);
 const warmLight = new THREE.PointLight(0xffaa33, 2.0, 30);
 warmLight.position.set(0, -2, 0);
 scene.add(warmLight);
+
+// MOON & MOONLIGHT
+function createMoonTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d");
+  const center = 256;
+
+  const base = ctx.createRadialGradient(190, 170, 24, center, center, 350);
+  base.addColorStop(0, "#fff9d5");
+  base.addColorStop(0.58, "#ffe7a5");
+  base.addColorStop(1, "#d5ae67");
+  ctx.fillStyle = base;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let index = 0; index < 24; index++) {
+    const angle = index * 2.4;
+    const distance = 34 + ((index * 47) % 150);
+    const x = center + Math.cos(angle) * distance;
+    const y = center + Math.sin(angle) * distance * 0.82;
+    const radius = 9 + ((index * 13) % 24);
+
+    ctx.fillStyle = `rgba(128, 96, 68, ${0.12 + (index % 3) * 0.04})`;
+    ctx.beginPath();
+    ctx.ellipse(x, y, radius, radius * 0.65, angle, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  return new THREE.CanvasTexture(canvas);
+}
+
+function createMoonGlowTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  const glow = ctx.createRadialGradient(128, 128, 16, 128, 128, 128);
+  glow.addColorStop(0, "rgba(255, 236, 178, 0.62)");
+  glow.addColorStop(0.35, "rgba(255, 219, 135, 0.2)");
+  glow.addColorStop(1, "rgba(255, 219, 135, 0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  return new THREE.CanvasTexture(canvas);
+}
+
+const moonPosition = new THREE.Vector3(-15, 20, -30);
+const moonGlow = new THREE.Sprite(
+  new THREE.SpriteMaterial({
+    map: createMoonGlowTexture(),
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  }),
+);
+moonGlow.position.copy(moonPosition);
+moonGlow.position.z -= 0.5;
+moonGlow.scale.set(18, 18, 1);
+scene.add(moonGlow);
+
+const moonMesh = new THREE.Mesh(
+  new THREE.SphereGeometry(5.3, isMobile ? 32 : 48, isMobile ? 20 : 32),
+  new THREE.MeshBasicMaterial({ map: createMoonTexture() }),
+);
+moonMesh.position.copy(moonPosition);
+scene.add(moonMesh);
+
+const moonLight = new THREE.PointLight(0xcbd8ff, 1.5, 70);
+moonLight.position.copy(moonPosition);
+scene.add(moonLight);
 
 // ISLAND
 const islandGroup = new THREE.Group();
