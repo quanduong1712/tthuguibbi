@@ -99,7 +99,7 @@ function createMoonGlowTexture() {
   return new THREE.CanvasTexture(canvas);
 }
 
-const moonPosition = new THREE.Vector3(6.5, 14.2, -19);
+const moonPosition = new THREE.Vector3(7.2, 15.4, -26);
 const moonGlow = new THREE.Sprite(
   new THREE.SpriteMaterial({
     map: createMoonGlowTexture(),
@@ -110,24 +110,24 @@ const moonGlow = new THREE.Sprite(
 );
 moonGlow.position.copy(moonPosition);
 moonGlow.position.z -= 0.5;
-moonGlow.scale.set(13, 13, 1);
+moonGlow.scale.set(10.5, 10.5, 1);
 scene.add(moonGlow);
 
 const moonMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(3.8, isMobile ? 32 : 48, isMobile ? 20 : 32),
+  new THREE.SphereGeometry(3.05, isMobile ? 32 : 48, isMobile ? 20 : 32),
   new THREE.MeshBasicMaterial({ map: createMoonTexture() }),
 );
 moonMesh.position.copy(moonPosition);
 scene.add(moonMesh);
 
 const moonHitMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(4.5, 16, 12),
+  new THREE.SphereGeometry(3.65, 16, 12),
   new THREE.MeshBasicMaterial({ visible: false }),
 );
 moonHitMesh.position.copy(moonPosition);
 scene.add(moonHitMesh);
 
-const moonLight = new THREE.PointLight(0xcbd8ff, 1.5, 70);
+const moonLight = new THREE.PointLight(0xcbd8ff, 1.25, 62);
 moonLight.position.copy(moonPosition);
 scene.add(moonLight);
 
@@ -1142,7 +1142,7 @@ class FinalMoonSequenceController {
     if (!finaleActive || this.heartSequenceStarted) return;
     this.moonClickCount += 1;
     moonMesh.scale.setScalar(1.08 + Math.min(this.moonClickCount, 8) * 0.012);
-    moonGlow.scale.setScalar(13 + this.moonClickCount * 0.32);
+    moonGlow.scale.setScalar(10.5 + this.moonClickCount * 0.32);
     createFirework(moonPosition);
     this.spawnLanterns(this.spawnPlan[this.moonClickCount - 1] || 0);
 
@@ -1239,7 +1239,7 @@ class FinalMoonSequenceController {
     this.messageIndex = -1;
     this.hintShown = false;
     moonMesh.scale.setScalar(1);
-    moonGlow.scale.setScalar(13);
+    moonGlow.scale.setScalar(10.5);
     moonHint.classList.remove("is-visible");
     moonRitual.classList.remove("is-visible", "is-complete");
     moonRitualText.textContent = "";
@@ -1416,9 +1416,13 @@ moonResetBtn.addEventListener("click", () => {
   passwordFeedback.textContent = "";
   passwordGate.classList.remove("is-unlocked");
   wishModal.classList.remove("active");
+  storyIntro.querySelector("p").textContent = "Anh làm một nơi nhỏ cho bbi.";
+  storyIntro.querySelector("span").textContent = "Xoay quanh một chút nhé...";
   storyIntro.classList.add("is-hidden");
   document.querySelector(".click-hint").textContent = "Chạm vào lồng đèn nhé";
   updateExploreStatus();
+  camera.position.copy(DEFAULT_CAM_POS);
+  controls.target.copy(DEFAULT_CAM_TARGET);
   resetCamera();
 });
 
