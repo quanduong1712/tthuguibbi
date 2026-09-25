@@ -941,17 +941,6 @@ class IntroSequenceController {
     this.light.position.copy(this.introPosition);
     scene.add(this.light);
 
-    this.logo = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: this.createRabbitLogoTexture(),
-      transparent: true,
-      opacity: 0,
-      depthWrite: false,
-    }));
-    this.logo.scale.set(0.01, 0.01, 1);
-    this.logo.position.copy(this.introPosition);
-    this.logo.position.z += 0.72;
-    scene.add(this.logo);
-
     this.dust = this.createDust();
     scene.add(this.dust);
     camera.position.set(0, 6.7, 22);
@@ -966,26 +955,6 @@ class IntroSequenceController {
     document.body.classList.remove("moon-ending");
     passwordGate.classList.remove("is-puzzle-visible");
     passwordGate.classList.add("is-lantern-ready");
-  }
-
-  createRabbitLogoTexture() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 128;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "rgba(255,248,219,0.96)";
-    ctx.beginPath();
-    ctx.arc(64, 64, 48, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#75617a";
-    ctx.beginPath();
-    ctx.ellipse(56, 76, 24, 22, -0.2, 0, Math.PI * 2);
-    ctx.arc(75, 58, 14, 0, Math.PI * 2);
-    ctx.roundRect(70, 28, 7, 27, 5);
-    ctx.roundRect(82, 30, 7, 25, 5);
-    ctx.arc(37, 78, 10, 0, Math.PI * 2);
-    ctx.fill();
-    return new THREE.CanvasTexture(canvas);
   }
 
   createDust() {
@@ -1090,11 +1059,6 @@ class IntroSequenceController {
     this.light.position.copy(this.lantern.position);
     this.dust.material.opacity = smooth(ignition) * 0.75;
     this.dust.rotation.y += delta * 0.8;
-    this.logo.material.opacity = Math.max(0, Math.min(1, (this.elapsed - 1.25) / 0.8));
-    this.logo.scale.setScalar(1.8 + smooth(ignition) * 0.7);
-    this.logo.position.copy(this.lantern.position);
-    this.logo.position.z += 0.75;
-
     if (this.state === "LANTERN_IGNITING" && this.elapsed >= 2.6) {
       this.state = "PASSWORD_REVEAL";
       this.travelElapsed = 0;
@@ -1108,9 +1072,6 @@ class IntroSequenceController {
       this.lantern.position.lerpVectors(this.introPosition, this.passwordPosition, easedPasswordTravel);
       this.lantern.scale.setScalar(THREE.MathUtils.lerp(3.15, this.passwordScale, easedPasswordTravel));
       this.light.position.copy(this.lantern.position);
-      this.logo.position.copy(this.lantern.position);
-      this.logo.position.z += 0.75;
-      this.logo.scale.setScalar(THREE.MathUtils.lerp(2.5, 0.84, easedPasswordTravel));
       this.dust.position.copy(this.lantern.position);
       if (passwordTravel >= 1) {
         this.state = "PASSWORD";
@@ -1134,9 +1095,6 @@ class IntroSequenceController {
     this.lantern.rotation.y += delta * 0.8;
     this.lantern.rotation.z = Math.sin(time * 1.4) * 0.12;
     this.light.position.copy(pathPoint);
-    this.logo.position.copy(pathPoint);
-    this.logo.position.z += 0.75;
-    this.logo.material.opacity = 1 - eased;
     this.dust.position.copy(pathPoint);
     camera.position.lerpVectors(new THREE.Vector3(0, 6.7, 22), DEFAULT_CAM_POS, eased);
     controls.target.lerpVectors(this.introPosition, DEFAULT_CAM_TARGET, eased);
@@ -1145,7 +1103,6 @@ class IntroSequenceController {
       this.state = "WORLD_ARRIVAL";
       this.transferIntoWorld();
       this.light.intensity = 0;
-      this.logo.visible = false;
       this.dust.visible = false;
       camera.position.copy(DEFAULT_CAM_POS);
       controls.target.copy(DEFAULT_CAM_TARGET);
@@ -1182,11 +1139,6 @@ class IntroSequenceController {
     this.body.material.emissiveIntensity = 0;
     this.glow.material.opacity = 0;
     this.light.intensity = 0;
-    this.logo.visible = true;
-    this.logo.material.opacity = 0;
-    this.logo.scale.set(0.01, 0.01, 1);
-    this.logo.position.copy(this.introPosition);
-    this.logo.position.z += 0.72;
     this.dust.visible = true;
     this.dust.material.opacity = 0;
     this.dust.position.copy(this.introPosition);
