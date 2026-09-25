@@ -1094,7 +1094,12 @@ class FinalMoonSequenceController {
       1.55 * Math.cos(2 * angle) -
       0.68 * Math.cos(3 * angle) -
       0.32 * Math.cos(4 * angle);
-    return new THREE.Vector3(moonPosition.x + x, moonPosition.y + y + 0.2, moonPosition.z + 5.8 + Math.sin(angle) * 0.4);
+    const depthLayer = (index % 3 - 1) * 1.25 + Math.sin(angle * 2) * 0.7;
+    return new THREE.Vector3(
+      moonPosition.x + x,
+      moonPosition.y + y + 0.2,
+      moonPosition.z + 5.8 + depthLayer,
+    );
   }
 
   spawnLanterns(count) {
@@ -1117,11 +1122,12 @@ class FinalMoonSequenceController {
         body,
         start,
         riseTarget: new THREE.Vector3(
-          moonPosition.x + (Math.random() - 0.5) * 9,
-          moonPosition.y - 4 + Math.random() * 8,
-          moonPosition.z + 2 + (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 24,
+          12 + Math.random() * 14,
+          -8 + (Math.random() - 0.5) * 18,
         ),
         heartTarget: null,
+        driftPhase: Math.random() * Math.PI * 2,
         spawnAge: 0,
       });
     }
@@ -1175,10 +1181,16 @@ class FinalMoonSequenceController {
       const scale = Math.min(1, lantern.spawnAge * 1.7) * 0.72;
       lantern.group.scale.setScalar(scale);
       lantern.group.rotation.y += delta * 0.35;
-      const target = this.heartSequenceStarted ? lantern.heartTarget : lantern.riseTarget;
+      const target = this.heartSequenceStarted
+        ? lantern.heartTarget.clone().add(new THREE.Vector3(
+          Math.sin(time * 0.75 + lantern.driftPhase) * 0.14,
+          Math.sin(time * 1.35 + lantern.driftPhase) * 0.22,
+          Math.cos(time * 0.9 + lantern.driftPhase) * 0.16,
+        ))
+        : lantern.riseTarget;
       const easing = this.heartSequenceStarted ? 0.028 : 0.018;
       lantern.group.position.lerp(target, easing);
-      lantern.group.position.y += Math.sin(time * 1.6 + index) * 0.003;
+      lantern.group.rotation.z = Math.sin(time * 0.85 + lantern.driftPhase) * 0.1;
       lantern.glow.material.opacity = this.heartSequenceStarted ? 0.92 : 0.55;
       lantern.glow.scale.setScalar(this.heartSequenceStarted ? 4.1 : 2.8);
       lantern.body.material.emissiveIntensity = this.heartSequenceStarted ? 1.7 : 1.05;
@@ -1321,6 +1333,11 @@ function onPointerUp(event) {
     if (!selectedLantern.userData.isSpecial) {
       openedStoryLanterns.add(selectedLantern.userData.id);
       selectedLantern.userData.isOpened = true;
+      selectedLantern.userData.skyTarget = new THREE.Vector3(
+        (Math.random() - 0.5) * 22,
+        10 + Math.random() * 15,
+        -6 + (Math.random() - 0.5) * 18,
+      );
       updateExploreStatus();
       if (openedStoryLanterns.size === regularMemories.length && !specialLantern.visible) {
         unlockFinalLantern();
@@ -1379,6 +1396,7 @@ moonResetBtn.addEventListener("click", () => {
       lantern.position.set(lantern.userData.initialX, lantern.userData.initialY, lantern.userData.initialZ);
     }
     lantern.userData.isOpened = false;
+    delete lantern.userData.skyTarget;
   });
   specialLantern.visible = false;
   worldUnlocked = false;
@@ -1501,6 +1519,11 @@ function animate() {
       lantern.userData.initialY +
       Math.sin(time * lantern.userData.swingSpeed + lantern.userData.id) * 0.22;
     lantern.rotation.y += 0.003;
+
+    if (lantern.userData.skyTarget && !finaleActive) {
+      lantern.position.lerp(lantern.userData.skyTarget, 0.012);
+      lantern.rotation.z = Math.sin(time * 0.8 + lantern.userData.id) * 0.08;
+    }
 
     if (lantern.userData.isSpecial && lantern.visible) {
       const glowScale = 7 + Math.sin(time * 3.5) * 1.1;
