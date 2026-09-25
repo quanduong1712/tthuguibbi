@@ -120,6 +120,13 @@ const moonMesh = new THREE.Mesh(
 moonMesh.position.copy(moonPosition);
 scene.add(moonMesh);
 
+const moonHitMesh = new THREE.Mesh(
+  new THREE.SphereGeometry(4.5, 16, 12),
+  new THREE.MeshBasicMaterial({ visible: false }),
+);
+moonHitMesh.position.copy(moonPosition);
+scene.add(moonHitMesh);
+
 const moonLight = new THREE.PointLight(0xcbd8ff, 1.5, 70);
 moonLight.position.copy(moonPosition);
 scene.add(moonLight);
@@ -1031,6 +1038,10 @@ const storyIntro = document.getElementById("storyIntro");
 const exploreStatus = document.getElementById("exploreStatus");
 const exploreFill = document.getElementById("exploreFill");
 const finale = document.getElementById("finale");
+const moonHint = document.getElementById("moonHint");
+const moonRitual = document.getElementById("moonRitual");
+const moonRitualText = document.getElementById("moonRitualText");
+const moonResetBtn = document.getElementById("moonResetBtn");
 const passwordGate = document.getElementById("passwordGate");
 const passwordForm = document.getElementById("passwordForm");
 const passwordInput = document.getElementById("passwordInput");
@@ -1038,6 +1049,185 @@ const passwordFeedback = document.getElementById("passwordFeedback");
 const passwordHint = document.getElementById("passwordHint");
 let passwordAttempts = 0;
 let worldUnlocked = false;
+
+class FinalMoonSequenceController {
+  constructor() {
+    this.moonClickCount = 0;
+    this.floatingLanternCount = 0;
+    this.heartSequenceStarted = false;
+    this.heartFormationComplete = false;
+    this.finalMessageVisible = false;
+    this.endingComplete = false;
+    this.experienceReset = false;
+    this.requiredClicks = 8;
+    this.spawnPlan = [3, 3, 3, 3, 3, 3, 3, 3];
+    this.secretLanterns = [];
+    this.group = new THREE.Group();
+    this.sequenceElapsed = 0;
+    this.messageElapsed = 0;
+    this.messageIndex = -1;
+    this.hintShown = false;
+    this.messages = [
+      "Anh không biết sau này...",
+      "...chúng mình sẽ đi cùng nhau được bao xa.",
+      "Anh cũng không biết tương lai sẽ có những ngày vui hay những ngày mệt mỏi.",
+      "Nhưng có một điều anh chắc chắn...",
+      "Anh vẫn muốn là người được ở bên cạnh bbi.",
+      "Muốn cùng bbi đi qua những ngày bình thường nhất.",
+      "Cùng nhau ăn những món ngon... cùng nhau đi thật nhiều nơi... cùng nhau có một căn nhà nhỏ... và cùng nhau già đi.",
+      "Anh yêu em nhiều lắm ❤️",
+    ];
+    scene.add(this.group);
+  }
+
+  showHint() {
+    if (this.hintShown || this.endingComplete) return;
+    this.hintShown = true;
+    moonHint.classList.add("is-visible");
+  }
+
+  heartPoint(index, total) {
+    const angle = (index / total) * Math.PI * 2;
+    const x = 5.8 * Math.pow(Math.sin(angle), 3);
+    const y =
+      4.15 * Math.cos(angle) -
+      1.55 * Math.cos(2 * angle) -
+      0.68 * Math.cos(3 * angle) -
+      0.32 * Math.cos(4 * angle);
+    return new THREE.Vector3(moonPosition.x + x, moonPosition.y + y + 0.2, moonPosition.z + 5.8 + Math.sin(angle) * 0.4);
+  }
+
+  spawnLanterns(count) {
+    for (let index = 0; index < count; index++) {
+      const { group, glow, body } = createLanternMesh();
+      const angle = Math.random() * Math.PI * 2;
+      const start = new THREE.Vector3(
+        Math.cos(angle) * (6 + Math.random() * 4),
+        4 + Math.random() * 3,
+        Math.sin(angle) * (6 + Math.random() * 4),
+      );
+      group.position.copy(start);
+      group.scale.setScalar(0.02);
+      glow.material.opacity = 0.25;
+      body.material.emissiveIntensity = 1.1;
+      this.group.add(group);
+      this.secretLanterns.push({
+        group,
+        glow,
+        body,
+        start,
+        riseTarget: new THREE.Vector3(
+          moonPosition.x + (Math.random() - 0.5) * 9,
+          moonPosition.y - 4 + Math.random() * 8,
+          moonPosition.z + 2 + (Math.random() - 0.5) * 3,
+        ),
+        heartTarget: null,
+        spawnAge: 0,
+      });
+    }
+    this.floatingLanternCount += count;
+  }
+
+  clickMoon() {
+    if (!finaleActive || this.heartSequenceStarted) return;
+    this.moonClickCount += 1;
+    moonMesh.scale.setScalar(1.08 + Math.min(this.moonClickCount, 8) * 0.012);
+    moonGlow.scale.setScalar(13 + this.moonClickCount * 0.32);
+    createFirework(moonPosition);
+    this.spawnLanterns(this.spawnPlan[this.moonClickCount - 1] || 0);
+
+    if (this.moonClickCount === 1) moonHint.textContent = "Có một điều anh vẫn chưa nói hết...";
+    if (this.moonClickCount === 3) moonHint.textContent = "Thêm một chút nữa nhé...";
+    if (this.moonClickCount === 6) moonHint.textContent = "Anh nghĩ bbi sắp nhìn thấy rồi đó...";
+    moonHint.classList.add("is-visible");
+
+    if (this.moonClickCount >= this.requiredClicks) this.startHeartFormation();
+  }
+
+  startHeartFormation() {
+    if (this.heartSequenceStarted) return;
+    this.heartSequenceStarted = true;
+    this.sequenceElapsed = 0;
+    controls.enabled = false;
+    moonHint.classList.remove("is-visible");
+    document.body.classList.add("moon-ending");
+    finale.classList.remove("is-visible");
+    this.secretLanterns.forEach((lantern, index) => {
+      lantern.heartTarget = this.heartPoint(index, this.secretLanterns.length);
+    });
+    targetCamPos = new THREE.Vector3(0, 13.5, 37);
+    targetCamTarget = new THREE.Vector3(0, 8.5, -4);
+  }
+
+  completeHeart() {
+    if (this.heartFormationComplete) return;
+    this.heartFormationComplete = true;
+    this.finalMessageVisible = true;
+    this.messageElapsed = 0;
+    this.messageIndex = -1;
+    moonGlow.scale.setScalar(17);
+    moonRitual.classList.add("is-visible");
+  }
+
+  update(delta, time) {
+    this.secretLanterns.forEach((lantern, index) => {
+      lantern.spawnAge += delta;
+      const scale = Math.min(1, lantern.spawnAge * 1.7) * 0.72;
+      lantern.group.scale.setScalar(scale);
+      lantern.group.rotation.y += delta * 0.35;
+      const target = this.heartSequenceStarted ? lantern.heartTarget : lantern.riseTarget;
+      const easing = this.heartSequenceStarted ? 0.028 : 0.018;
+      lantern.group.position.lerp(target, easing);
+      lantern.group.position.y += Math.sin(time * 1.6 + index) * 0.003;
+      lantern.glow.material.opacity = this.heartSequenceStarted ? 0.92 : 0.55;
+      lantern.glow.scale.setScalar(this.heartSequenceStarted ? 4.1 : 2.8);
+      lantern.body.material.emissiveIntensity = this.heartSequenceStarted ? 1.7 : 1.05;
+    });
+
+    if (this.heartSequenceStarted && !this.heartFormationComplete) {
+      this.sequenceElapsed += delta;
+      if (this.sequenceElapsed > 4.8) this.completeHeart();
+    }
+
+    if (this.finalMessageVisible && !this.endingComplete) {
+      this.messageElapsed += delta;
+      const nextIndex = Math.floor(this.messageElapsed / 2.5);
+      if (nextIndex !== this.messageIndex && nextIndex < this.messages.length) {
+        this.messageIndex = nextIndex;
+        moonRitualText.textContent = this.messages[nextIndex];
+      }
+      if (this.messageElapsed > this.messages.length * 2.5 + 1) {
+        this.endingComplete = true;
+        moonRitualText.textContent = this.messages[this.messages.length - 1];
+        moonRitual.classList.add("is-complete");
+      }
+    }
+  }
+
+  reset() {
+    this.secretLanterns.forEach((lantern) => this.group.remove(lantern.group));
+    this.secretLanterns = [];
+    this.moonClickCount = 0;
+    this.floatingLanternCount = 0;
+    this.heartSequenceStarted = false;
+    this.heartFormationComplete = false;
+    this.finalMessageVisible = false;
+    this.endingComplete = false;
+    this.experienceReset = true;
+    this.sequenceElapsed = 0;
+    this.messageElapsed = 0;
+    this.messageIndex = -1;
+    this.hintShown = false;
+    moonMesh.scale.setScalar(1);
+    moonGlow.scale.setScalar(13);
+    moonHint.classList.remove("is-visible");
+    moonRitual.classList.remove("is-visible", "is-complete");
+    moonRitualText.textContent = "";
+    document.body.classList.remove("moon-ending");
+  }
+}
+
+const finalMoonSequence = new FinalMoonSequenceController();
 
 function updateExploreStatus() {
   const openedCount = openedStoryLanterns.size;
@@ -1064,13 +1254,9 @@ function beginFinale() {
   moonGlow.material.opacity = 1;
   moonMesh.scale.setScalar(1.08);
 
-  targetCamPos = new THREE.Vector3(0, 16, 34);
-  targetCamTarget = moonPosition.clone();
-
-  setTimeout(() => {
-    targetCamPos = DEFAULT_CAM_POS.clone();
-    targetCamTarget = new THREE.Vector3(0, 5.5, 1);
-  }, 5500);
+  targetCamPos = DEFAULT_CAM_POS.clone();
+  targetCamTarget = DEFAULT_CAM_TARGET.clone();
+  setTimeout(() => finalMoonSequence.showHint(), 3000);
 }
 
 let pointerDownPos = { x: 0, y: 0 };
@@ -1106,6 +1292,11 @@ function onPointerUp(event) {
   mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
+  const moonHit = raycaster.intersectObject(moonHitMesh, false);
+  if (finaleActive && moonHit.length > 0) {
+    finalMoonSequence.clickMoon();
+    return;
+  }
   const intersects = raycaster.intersectObjects(interactiveObjects, false);
 
   if (intersects.length > 0) {
@@ -1153,6 +1344,13 @@ window.addEventListener("pointermove", (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
+  const moonIsHovered = finaleActive && raycaster.intersectObject(moonHitMesh, false).length > 0;
+  if (moonIsHovered) {
+    renderer.domElement.style.cursor = "pointer";
+    moonGlow.material.opacity = 0.95;
+    return;
+  }
+  moonGlow.material.opacity = finaleActive ? 0.72 : 1;
   const hit = raycaster
     .intersectObjects(interactiveObjects, false)
     .find((item) => item.object.userData.parentLantern.visible);
@@ -1168,6 +1366,34 @@ window.addEventListener("pointermove", (event) => {
   }
   hoveredLantern = nextHoveredLantern || null;
   renderer.domElement.style.cursor = hit ? "pointer" : "grab";
+});
+
+moonResetBtn.addEventListener("click", () => {
+  finalMoonSequence.reset();
+  finaleActive = false;
+  finale.classList.remove("is-visible");
+  openedStoryLanterns.clear();
+  lanterns.forEach((lantern) => {
+    if (lantern.userData.isSpecial) lantern.visible = false;
+    if (lantern.userData.initialX !== undefined) {
+      lantern.position.set(lantern.userData.initialX, lantern.userData.initialY, lantern.userData.initialZ);
+    }
+    lantern.userData.isOpened = false;
+  });
+  specialLantern.visible = false;
+  worldUnlocked = false;
+  controls.enabled = false;
+  passwordAttempts = 0;
+  passwordInput.value = "";
+  passwordInput.disabled = false;
+  passwordForm.querySelector("button").disabled = false;
+  passwordFeedback.textContent = "";
+  passwordGate.classList.remove("is-unlocked");
+  wishModal.classList.remove("active");
+  storyIntro.classList.add("is-hidden");
+  document.querySelector(".click-hint").textContent = "Chạm vào lồng đèn nhé";
+  updateExploreStatus();
+  resetCamera();
 });
 
 passwordForm.addEventListener("submit", (event) => {
@@ -1282,21 +1508,9 @@ function animate() {
       lantern.userData.glow.material.opacity = 0.82 + Math.sin(time * 3.5) * 0.18;
     }
 
-    if (finaleActive && lantern.visible) {
-      const heartIndex = lantern.userData.id % 16;
-      const heartAngle = (heartIndex / 16) * Math.PI * 2;
-      const heartX = 4.8 * Math.pow(Math.sin(heartAngle), 3);
-      const heartY =
-        3.8 * Math.cos(heartAngle) -
-        1.4 * Math.cos(2 * heartAngle) -
-        0.6 * Math.cos(3 * heartAngle) -
-        0.3 * Math.cos(4 * heartAngle);
-      lantern.position.lerp(
-        new THREE.Vector3(moonPosition.x + heartX, moonPosition.y + heartY, moonPosition.z + 3),
-        0.004,
-      );
-    }
   });
+
+  finalMoonSequence.update(delta, time);
 
   const pPos = petalsGeo.attributes.position.array;
   for (let i = 0; i < fallingPetalsCount; i++) {

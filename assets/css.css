@@ -265,6 +265,94 @@ html {
   font-weight: 600;
 }
 
+.moon-hint {
+  position: fixed;
+  bottom: 68px;
+  left: 50%;
+  z-index: 22;
+  max-width: min(88%, 420px);
+  transform: translate(-50%, 14px);
+  opacity: 0;
+  color: rgba(247, 232, 197, 0.8);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+  pointer-events: none;
+}
+
+.moon-hint.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.moon-ritual {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-content: center;
+  gap: 24px;
+  padding: 28px;
+  background: rgba(3, 5, 17, 0.22);
+  opacity: 0;
+  pointer-events: none;
+  text-align: center;
+  transition: opacity 1.4s ease;
+}
+
+.moon-ritual.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.moon-ritual p {
+  max-width: 520px;
+  min-height: 90px;
+  color: #fff4d6;
+  font-family: "Dancing Script", cursive;
+  font-size: clamp(32px, 7vw, 52px);
+  line-height: 1.18;
+  text-shadow: 0 3px 24px rgba(0, 0, 0, 0.9);
+}
+
+.moon-ritual button {
+  justify-self: center;
+  border: 1px solid rgba(255, 207, 122, 0.78);
+  border-radius: 4px;
+  padding: 12px 18px;
+  background: rgba(255, 181, 46, 0.12);
+  color: #fff4d6;
+  font: 600 14px "Quicksand", sans-serif;
+  letter-spacing: 0.6px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.6s ease, transform 0.6s ease, background 0.25s ease;
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.moon-ritual.is-complete button {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.moon-ending .top-bar,
+.moon-ending .explore-status,
+.moon-ending .click-hint,
+.moon-ending .story-intro,
+.moon-ending .finale {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.moon-ritual button:hover {
+  background: rgba(255, 181, 46, 0.26);
+  transform: translateY(0) scale(1.04);
+}
+
 .icon-btn {
   width: 44px;
   height: 44px;
