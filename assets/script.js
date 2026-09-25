@@ -911,6 +911,233 @@ specialLantern.userData.glow.scale.set(7, 7, 1);
 specialLantern.userData.glow.material.opacity = 1;
 specialLantern.userData.body.material.emissiveIntensity = 2.8;
 
+class IntroSequenceController {
+  constructor() {
+    this.state = "INTRO_IDLE";
+    this.elapsed = 0;
+    this.started = false;
+    this.worldReady = false;
+    this.introGroup = new THREE.Group();
+    scene.add(this.introGroup);
+
+    const { group, glow, body, hitMesh } = createLanternMesh();
+    this.lantern = group;
+    this.glow = glow;
+    this.body = body;
+    this.hitMesh = hitMesh;
+    this.introGroup.add(group);
+    this.introPosition = new THREE.Vector3(0, 6.7, 17);
+    this.worldPosition = new THREE.Vector3(-10, 7, 4);
+    this.lantern.position.copy(this.introPosition);
+    this.lantern.scale.setScalar(3.15);
+    this.glow.material.opacity = 0;
+    this.body.material.emissiveIntensity = 0;
+    this.light = new THREE.PointLight(0xffba55, 0, 18);
+    this.light.position.copy(this.introPosition);
+    scene.add(this.light);
+
+    this.logo = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: this.createRabbitLogoTexture(),
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+    }));
+    this.logo.scale.set(0.01, 0.01, 1);
+    this.logo.position.copy(this.introPosition);
+    this.logo.position.z += 0.72;
+    scene.add(this.logo);
+
+    this.dust = this.createDust();
+    scene.add(this.dust);
+    camera.position.set(0, 6.7, 22);
+    controls.target.copy(this.introPosition);
+    controls.enabled = false;
+    document.body.classList.add("intro-sequence");
+    islandGroup.visible = false;
+    lanternsGroup.visible = false;
+    moonMesh.visible = false;
+    moonGlow.visible = false;
+    moonLight.visible = false;
+    document.body.classList.remove("moon-ending");
+    passwordGate.classList.remove("is-puzzle-visible");
+    passwordGate.classList.add("is-lantern-ready");
+  }
+
+  createRabbitLogoTexture() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "rgba(255,248,219,0.96)";
+    ctx.beginPath();
+    ctx.arc(64, 64, 48, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#75617a";
+    ctx.beginPath();
+    ctx.ellipse(56, 76, 24, 22, -0.2, 0, Math.PI * 2);
+    ctx.arc(75, 58, 14, 0, Math.PI * 2);
+    ctx.roundRect(70, 28, 7, 27, 5);
+    ctx.roundRect(82, 30, 7, 25, 5);
+    ctx.arc(37, 78, 10, 0, Math.PI * 2);
+    ctx.fill();
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  createDust() {
+    const count = isMobile ? 36 : 64;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    for (let index = 0; index < count; index++) {
+      positions[index * 3] = (Math.random() - 0.5) * 3;
+      positions[index * 3 + 1] = (Math.random() - 0.5) * 3;
+      positions[index * 3 + 2] = (Math.random() - 0.5) * 2;
+    }
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    const material = new THREE.PointsMaterial({
+      color: 0xffd27a,
+      size: 0.12,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const dust = new THREE.Points(geometry, material);
+    dust.position.copy(this.introPosition);
+    return dust;
+  }
+
+  begin() {
+    if (this.state !== "INTRO_IDLE") return;
+    this.state = "LANTERN_IGNITING";
+    this.started = true;
+    passwordGate.classList.remove("is-lantern-ready");
+  }
+
+  tryClick(clientX, clientY) {
+    if (this.state !== "INTRO_IDLE") return false;
+    mouse.x = (clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    if (raycaster.intersectObject(this.hitMesh, false).length === 0) return false;
+    this.begin();
+    return true;
+  }
+
+  revealWorld() {
+    if (this.worldReady) return;
+    this.worldReady = true;
+    islandGroup.visible = true;
+    lanternsGroup.visible = true;
+    moonMesh.visible = true;
+    moonGlow.visible = true;
+    moonLight.visible = true;
+    petalsParticles.visible = true;
+  }
+
+  update(delta, time) {
+    if (this.state === "INTRO_IDLE") {
+      this.lantern.position.y = this.introPosition.y + Math.sin(time * 0.7) * 0.16;
+      this.lantern.rotation.y = Math.sin(time * 0.4) * 0.12;
+      this.light.position.copy(this.lantern.position);
+      return;
+    }
+
+    this.elapsed += delta;
+    const smooth = (value) => value * value * (3 - 2 * value);
+    const ignition = Math.min(1, this.elapsed / 2.1);
+    this.body.material.emissiveIntensity = smooth(ignition) * 1.15;
+    this.glow.material.opacity = smooth(ignition) * 0.9;
+    this.light.intensity = smooth(ignition) * 3.3;
+    this.light.position.copy(this.lantern.position);
+    this.dust.material.opacity = smooth(ignition) * 0.75;
+    this.dust.rotation.y += delta * 0.8;
+    this.logo.material.opacity = Math.max(0, Math.min(1, (this.elapsed - 1.25) / 0.8));
+    this.logo.scale.setScalar(1.8 + smooth(ignition) * 0.7);
+    this.logo.position.copy(this.lantern.position);
+    this.logo.position.z += 0.75;
+
+    if (this.elapsed < 2.6) return;
+    if (this.state === "LANTERN_IGNITING") this.state = "WORLD_REVEAL";
+
+    const travel = Math.min(1, (this.elapsed - 2.6) / 4.2);
+    const eased = smooth(travel);
+    this.revealWorld();
+    const waypoint = new THREE.Vector3(1.6, 10, 6);
+    const pathPoint = travel < 0.5
+      ? this.introPosition.clone().lerp(waypoint, smooth(travel * 2))
+      : waypoint.clone().lerp(this.worldPosition, smooth((travel - 0.5) * 2));
+    this.lantern.position.copy(pathPoint);
+    this.lantern.rotation.y += delta * 0.8;
+    this.lantern.rotation.z = Math.sin(time * 1.4) * 0.12;
+    this.light.position.copy(pathPoint);
+    this.logo.position.copy(pathPoint);
+    this.logo.position.z += 0.75;
+    this.logo.material.opacity = 1 - eased;
+    this.dust.position.copy(pathPoint);
+    camera.position.lerpVectors(new THREE.Vector3(0, 6.7, 22), DEFAULT_CAM_POS, eased);
+    controls.target.lerpVectors(this.introPosition, DEFAULT_CAM_TARGET, eased);
+
+    if (travel >= 1 && this.state !== "PASSWORD") {
+      this.state = "PASSWORD";
+      this.introGroup.remove(this.lantern);
+      this.lantern.scale.setScalar(0.72);
+      this.lantern.position.copy(this.worldPosition);
+      this.lantern.rotation.set(0, 0, 0);
+      this.lantern.userData.initialX = this.worldPosition.x;
+      this.lantern.userData.initialY = this.worldPosition.y;
+      this.lantern.userData.initialZ = this.worldPosition.z;
+      lanternsGroup.add(this.lantern);
+      lanterns.push(this.lantern);
+      this.light.intensity = 0;
+      this.logo.visible = false;
+      this.dust.visible = false;
+      camera.position.copy(DEFAULT_CAM_POS);
+      controls.target.copy(DEFAULT_CAM_TARGET);
+      passwordGate.classList.add("is-puzzle-visible");
+    }
+  }
+
+  reset() {
+    lanternsGroup.remove(this.lantern);
+    const lanternIndex = lanterns.indexOf(this.lantern);
+    if (lanternIndex >= 0) lanterns.splice(lanternIndex, 1);
+    this.introGroup.add(this.lantern);
+    this.state = "INTRO_IDLE";
+    this.elapsed = 0;
+    this.started = false;
+    this.worldReady = false;
+    this.lantern.position.copy(this.introPosition);
+    this.lantern.rotation.set(0, 0, 0);
+    this.lantern.scale.setScalar(3.15);
+    this.body.material.emissiveIntensity = 0;
+    this.glow.material.opacity = 0;
+    this.light.intensity = 0;
+    this.logo.visible = true;
+    this.logo.material.opacity = 0;
+    this.logo.scale.set(0.01, 0.01, 1);
+    this.logo.position.copy(this.introPosition);
+    this.logo.position.z += 0.72;
+    this.dust.visible = true;
+    this.dust.material.opacity = 0;
+    this.dust.position.copy(this.introPosition);
+    islandGroup.visible = false;
+    lanternsGroup.visible = false;
+    moonMesh.visible = false;
+    moonGlow.visible = false;
+    moonLight.visible = false;
+    petalsParticles.visible = false;
+    passwordGate.classList.remove("is-puzzle-visible");
+    passwordGate.classList.add("is-lantern-ready");
+    document.body.classList.add("intro-sequence");
+    camera.position.set(0, 6.7, 22);
+    controls.target.copy(this.introPosition);
+    targetCamPos = null;
+    targetCamTarget = null;
+  }
+}
+
+let introSequence;
+
 const decorativeLanternCount = isMobile ? 3 : 5;
 for (let index = 0; index < decorativeLanternCount; index++) {
   const radius = 17 + Math.random() * 18;
@@ -1049,6 +1276,7 @@ const passwordFeedback = document.getElementById("passwordFeedback");
 const passwordHint = document.getElementById("passwordHint");
 let passwordAttempts = 0;
 let worldUnlocked = false;
+introSequence = new IntroSequenceController();
 
 class FinalMoonSequenceController {
   constructor() {
@@ -1289,10 +1517,6 @@ function onPointerDown(event) {
 }
 
 function onPointerUp(event) {
-  if (!worldUnlocked) return;
-  if (event.target.closest(".top-bar") || event.target.closest(".wish-modal"))
-    return;
-
   const clientX =
     event.clientX ||
     (event.changedTouches && event.changedTouches[0].clientX) ||
@@ -1307,6 +1531,13 @@ function onPointerUp(event) {
     clientY - pointerDownPos.y,
   );
   if (distMoved > 8) return;
+
+  if (!worldUnlocked) {
+    introSequence.tryClick(clientX, clientY);
+    return;
+  }
+  if (event.target.closest(".top-bar") || event.target.closest(".wish-modal"))
+    return;
 
   mouse.x = (clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(clientY / window.innerHeight) * 2 + 1;
@@ -1421,13 +1652,13 @@ moonResetBtn.addEventListener("click", () => {
   storyIntro.classList.add("is-hidden");
   document.querySelector(".click-hint").textContent = "Chạm vào lồng đèn nhé";
   updateExploreStatus();
-  camera.position.copy(DEFAULT_CAM_POS);
-  controls.target.copy(DEFAULT_CAM_TARGET);
   resetCamera();
+  introSequence.reset();
 });
 
 passwordForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  if (introSequence.state !== "PASSWORD") return;
   const password = passwordInput.value.replace(/\D/g, "");
   if (password === "17042026") {
     passwordFeedback.textContent = "Đúng rồi... Ngày mà hai đứa mình bắt đầu câu chuyện này.";
@@ -1436,6 +1667,7 @@ passwordForm.addEventListener("submit", (event) => {
     setTimeout(() => {
       worldUnlocked = true;
       controls.enabled = true;
+      document.body.classList.remove("intro-sequence");
       passwordGate.classList.add("is-unlocked");
       storyIntro.classList.remove("is-hidden");
       storyIntro.querySelector("p").textContent = "Chào mừng bbi đến với nơi nhỏ anh làm cho bbi.";
@@ -1519,6 +1751,8 @@ function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
   const time = clock.getElapsedTime();
+
+  introSequence.update(delta, time);
 
   lanterns.forEach((lantern) => {
     lantern.position.x =

@@ -42,6 +42,26 @@ html {
 .password-gate.is-unlocked {
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
+}
+
+.intro-sequence .password-gate {
+  background: radial-gradient(circle at 50% 50%, rgba(21, 29, 66, 0.2), transparent 42%), rgba(7, 9, 28, 0.08);
+}
+
+.intro-sequence .top-bar,
+.intro-sequence .story-intro,
+.intro-sequence .explore-status,
+.intro-sequence .finale,
+.intro-sequence .moon-hint {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.intro-sequence .click-hint {
+  visibility: hidden;
+  animation: none;
+  pointer-events: none;
 }
 
 .gate-glow {
@@ -53,19 +73,11 @@ html {
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 232, 176, 0) 0 12%, rgba(255, 181, 46, 0) 45%, transparent 72%);
-  animation: gateGlowLight 4.2s ease forwards;
   pointer-events: none;
 }
 
 .gate-lantern-intro {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 2;
-  width: 112px;
-  height: 148px;
-  transform: translate(-50%, -50%) scale(1.5);
-  animation: gateLanternJourney 4.2s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
+  display: none;
 }
 
 .gate-lantern-frame {
@@ -208,11 +220,34 @@ html {
   padding-top: 130px;
   opacity: 0;
   transform: translateY(14px);
-  animation: gateContentReveal 0.9s ease 3.45s forwards;
+}
+
+.password-gate.is-puzzle-visible .gate-content {
+  animation: gateContentReveal 0.9s ease forwards;
 }
 
 @keyframes gateContentReveal {
   to { opacity: 1; transform: translateY(0); }
+}
+
+.intro-touch-hint {
+  position: fixed;
+  bottom: 13%;
+  left: 50%;
+  z-index: 3;
+  transform: translate(-50%, 10px);
+  color: rgba(247, 232, 197, 0);
+  font-size: 13px;
+  letter-spacing: 0.8px;
+  opacity: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease, color 0.8s ease;
+  pointer-events: none;
+}
+
+.password-gate.is-lantern-ready .intro-touch-hint {
+  color: rgba(247, 232, 197, 0.75);
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .gate-kicker {
