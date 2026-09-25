@@ -144,19 +144,22 @@ html {
 
 .wish-image-container {
   width: 100%;
-  height: 180px;
+  height: clamp(220px, 46vh, 360px);
   border-radius: 14px;
   overflow: hidden;
   margin: 12px 0 16px 0;
   border: 1px solid rgba(255, 215, 0, 0.4);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
   background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .wish-image-container img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
