@@ -30,9 +30,7 @@ html {
   inset: 0;
   z-index: 200;
   display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 14px;
+  place-items: center;
   padding: 28px;
   overflow: hidden;
   text-align: center;
@@ -47,26 +45,27 @@ html {
 }
 
 .gate-glow {
-  position: absolute;
-  top: 8%;
+  position: fixed;
+  top: 50%;
   left: 50%;
-  width: 280px;
-  height: 280px;
-  transform: translateX(-50%);
+  width: 360px;
+  height: 360px;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 232, 176, 0.2), rgba(255, 181, 46, 0.05) 38%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 232, 176, 0) 0 12%, rgba(255, 181, 46, 0) 45%, transparent 72%);
+  animation: gateGlowLight 4.2s ease forwards;
   pointer-events: none;
 }
 
 .gate-lantern-intro {
-  position: relative;
-  justify-self: center;
-  width: 96px;
-  height: 126px;
-  margin: 6px 0 12px;
-  opacity: 0;
-  transform: translateY(-26px) scale(1.65);
-  animation: gateLanternArrival 3.2s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  width: 112px;
+  height: 148px;
+  transform: translate(-50%, -50%) scale(1.5);
+  animation: gateLanternJourney 4.2s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
 }
 
 .gate-lantern-frame {
@@ -76,8 +75,9 @@ html {
   place-items: center;
   border: 2px solid #fff4d6;
   border-radius: 38px 38px 25px 25px;
-  background: radial-gradient(circle at 50% 42%, #fff4d6 0 32%, #ffc354 70%, #f59e2f 100%);
-  box-shadow: 0 0 42px rgba(255, 187, 76, 0.78), inset 0 0 18px rgba(255, 255, 230, 0.7);
+  background: radial-gradient(circle at 50% 42%, #4c3940 0 32%, #382e40 70%, #25233b 100%);
+  box-shadow: 0 0 10px rgba(255, 187, 76, 0), inset 0 0 12px rgba(0, 0, 0, 0.45);
+  animation: gateLanternLight 4.2s ease forwards;
 }
 
 .gate-lantern-frame::before,
@@ -108,8 +108,10 @@ html {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #fff8db;
-  box-shadow: 0 0 12px rgba(255, 255, 232, 0.8);
+  background: #4a4355;
+  box-shadow: none;
+  opacity: 0.3;
+  animation: gateLogoReveal 4.2s ease forwards;
 }
 
 .rabbit-body,
@@ -162,25 +164,55 @@ html {
   border-radius: 50%;
 }
 
-@keyframes gateLanternArrival {
+@keyframes gateLanternJourney {
   0% {
-    opacity: 0;
-    transform: translateY(-26px) scale(1.65);
-    filter: brightness(1.9);
-  }
-  45% {
     opacity: 1;
-    transform: translateY(-6px) scale(1.28);
-    filter: brightness(1.3);
+    transform: translate(-50%, -50%) scale(1.5);
   }
-  72% {
-    transform: translateY(2px) scale(0.96);
+  42% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.5);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: brightness(1);
+    transform: translate(-50%, calc(-50% - 248px)) scale(0.76);
   }
+}
+
+@keyframes gateLanternLight {
+  0%, 22% {
+    background: radial-gradient(circle at 50% 42%, #4c3940 0 32%, #382e40 70%, #25233b 100%);
+    box-shadow: 0 0 10px rgba(255, 187, 76, 0), inset 0 0 12px rgba(0, 0, 0, 0.45);
+  }
+  55%, 100% {
+    background: radial-gradient(circle at 50% 42%, #fff4d6 0 32%, #ffc354 70%, #f59e2f 100%);
+    box-shadow: 0 0 42px rgba(255, 187, 76, 0.78), inset 0 0 18px rgba(255, 255, 230, 0.7);
+  }
+}
+
+@keyframes gateLogoReveal {
+  0%, 27% { opacity: 0.18; background: #4a4355; box-shadow: none; }
+  58%, 100% { opacity: 1; background: #fff8db; box-shadow: 0 0 12px rgba(255, 255, 232, 0.8); }
+}
+
+@keyframes gateGlowLight {
+  0%, 20% { opacity: 0; }
+  52%, 100% { opacity: 1; background: radial-gradient(circle, rgba(255, 232, 176, 0.28), rgba(255, 181, 46, 0.1) 38%, transparent 72%); }
+}
+
+.gate-content {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(100%, 520px);
+  padding-top: 130px;
+  opacity: 0;
+  transform: translateY(14px);
+  animation: gateContentReveal 0.9s ease 3.45s forwards;
+}
+
+@keyframes gateContentReveal {
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .gate-kicker {
