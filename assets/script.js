@@ -40,6 +40,7 @@ controls.maxPolarAngle = Math.PI / 2 + 0.05;
 controls.minDistance = 13;
 controls.maxDistance = 46;
 controls.target.copy(DEFAULT_CAM_TARGET);
+controls.enabled = false;
 
 // LIGHTS
 const ambientLight = new THREE.AmbientLight(0x212942, 1.15);
@@ -717,6 +718,10 @@ const finalWish = {
   img: "./assets/photo-3.jpg",
 };
 
+const lanternMemories = window.MID_AUTUMN_MEMORIES || wishList;
+const regularMemories = lanternMemories.filter((memory) => !memory.final);
+const finalMemory = lanternMemories.find((memory) => memory.final) || finalWish;
+
 function createLanternTexture() {
   const canvas = document.createElement("canvas");
   canvas.width = 128;
@@ -828,14 +833,14 @@ const storyLanternPositions = [
   new THREE.Vector3(4, 22, -21),
 ];
 
-wishList.forEach((wishData, index) => {
+regularMemories.forEach((wishData, index) => {
   addLantern(storyLanternPositions[index], wishData, index);
 });
 
 const specialLantern = addLantern(
   new THREE.Vector3(-2, 18, -21),
-  finalWish,
-  wishList.length,
+  finalMemory,
+  regularMemories.length,
   true,
 );
 specialLantern.visible = false;
@@ -970,18 +975,25 @@ const storyIntro = document.getElementById("storyIntro");
 const exploreStatus = document.getElementById("exploreStatus");
 const exploreFill = document.getElementById("exploreFill");
 const finale = document.getElementById("finale");
+const passwordGate = document.getElementById("passwordGate");
+const passwordForm = document.getElementById("passwordForm");
+const passwordInput = document.getElementById("passwordInput");
+const passwordFeedback = document.getElementById("passwordFeedback");
+const passwordHint = document.getElementById("passwordHint");
+let passwordAttempts = 0;
+let worldUnlocked = false;
 
 function updateExploreStatus() {
   const openedCount = openedStoryLanterns.size;
-  exploreStatus.textContent = `${openedCount} / ${wishList.length} điều anh muốn kể`;
-  exploreFill.style.width = `${(openedCount / wishList.length) * 100}%`;
+  exploreStatus.textContent = `${openedCount} / ${regularMemories.length + 1} điều anh muốn kể`;
+  exploreFill.style.width = `${(openedCount / (regularMemories.length + 1)) * 100}%`;
 }
 
 function unlockFinalLantern() {
   specialLantern.visible = true;
   specialLantern.userData.initialY = specialLantern.position.y;
-  exploreStatus.textContent = "Chiếc đèn cuối đã sáng lên gần mặt trăng";
-  exploreFill.style.width = "100%";
+  exploreStatus.textContent = `${regularMemories.length} / ${regularMemories.length + 1} điều anh muốn kể`;
+  exploreFill.style.width = `${(regularMemories.length / (regularMemories.length + 1)) * 100}%`;
   document.querySelector(".click-hint").textContent = "Tìm chiếc đèn đang sáng rực nhất nhé";
   createFirework(specialLantern.position);
 }
@@ -991,7 +1003,8 @@ function beginFinale() {
   finaleActive = true;
   finale.classList.add("is-visible");
   document.querySelector(".click-hint").textContent = "Cảm ơn bbi đã đi hết thế giới nhỏ này";
-  exploreStatus.textContent = "Đêm Trung Thu của hai đứa";
+  exploreStatus.textContent = `${regularMemories.length + 1} / ${regularMemories.length + 1} điều anh muốn kể`;
+  exploreFill.style.width = "100%";
   moonGlow.material.opacity = 1;
   moonMesh.scale.setScalar(1.08);
 
@@ -1014,6 +1027,7 @@ function onPointerDown(event) {
 }
 
 function onPointerUp(event) {
+  if (!worldUnlocked) return;
   if (event.target.closest(".top-bar") || event.target.closest(".wish-modal"))
     return;
 
@@ -1061,7 +1075,7 @@ function onPointerUp(event) {
       openedStoryLanterns.add(selectedLantern.userData.id);
       selectedLantern.userData.isOpened = true;
       updateExploreStatus();
-      if (openedStoryLanterns.size === wishList.length && !specialLantern.visible) {
+      if (openedStoryLanterns.size === regularMemories.length && !specialLantern.visible) {
         unlockFinalLantern();
       }
     } else {
@@ -1078,6 +1092,7 @@ window.addEventListener("pointerdown", onPointerDown, { passive: true });
 window.addEventListener("pointerup", onPointerUp, { passive: true });
 
 window.addEventListener("pointermove", (event) => {
+  if (!worldUnlocked) return;
   if (event.target.closest(".top-bar") || event.target.closest(".wish-modal")) return;
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -1097,6 +1112,34 @@ window.addEventListener("pointermove", (event) => {
   }
   hoveredLantern = nextHoveredLantern || null;
   renderer.domElement.style.cursor = hit ? "pointer" : "grab";
+});
+
+passwordForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const password = passwordInput.value.replace(/\D/g, "");
+  if (password === "17042026") {
+    passwordFeedback.textContent = "Đúng rồi... Ngày mà hai đứa mình bắt đầu câu chuyện này.";
+    passwordInput.disabled = true;
+    passwordForm.querySelector("button").disabled = true;
+    setTimeout(() => {
+      worldUnlocked = true;
+      controls.enabled = true;
+      passwordGate.classList.add("is-unlocked");
+      storyIntro.classList.remove("is-hidden");
+      storyIntro.querySelector("p").textContent = "Chào mừng bbi đến với nơi nhỏ anh làm cho bbi.";
+      storyIntro.querySelector("span").textContent = "Xoay quanh một chút nhé...";
+      setTimeout(() => storyIntro.classList.add("is-hidden"), 4200);
+    }, 1200);
+    return;
+  }
+
+  passwordAttempts += 1;
+  passwordFeedback.textContent = passwordAttempts === 1
+    ? "Gần đúng rồi đó..."
+    : passwordAttempts === 2
+      ? "Anh nghĩ bbi đang nhớ nhầm mất một chút rồi."
+      : "Thôi được rồi, anh cho bbi một gợi ý... Ngày đó có một con số 17.";
+  passwordInput.select();
 });
 
 function resetCamera() {
@@ -1128,6 +1171,8 @@ window.addEventListener("keydown", (e) => {
 // AUDIO
 const bgm = document.getElementById("bgm");
 const audioBtn = document.getElementById("audio-btn");
+const resetCamBtn = document.getElementById("reset-cam-btn");
+const fullscreenBtn = document.getElementById("fullscreen-btn");
 let isPlaying = false;
 
 audioBtn.addEventListener("click", () => {
@@ -1143,6 +1188,16 @@ audioBtn.addEventListener("click", () => {
       .catch(() => {});
   }
   isPlaying = !isPlaying;
+});
+
+resetCamBtn.addEventListener("click", resetCamera);
+
+fullscreenBtn.addEventListener("click", async () => {
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+    return;
+  }
+  await document.documentElement.requestFullscreen();
 });
 
 // ANIMATION

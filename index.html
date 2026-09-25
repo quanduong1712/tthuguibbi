@@ -14,9 +14,25 @@
 
     <div id="webgl-container"></div>
 
+    <section class="password-gate" id="passwordGate" aria-labelledby="gateTitle">
+        <div class="gate-glow" aria-hidden="true"></div>
+        <div class="gate-lantern" aria-hidden="true"></div>
+        <p class="gate-kicker">Đêm Trung Thu của hai đứa</p>
+        <h1 id="gateTitle">Anh có một nơi nhỏ muốn đưa bbi đến...</h1>
+        <p class="gate-subtitle" id="gateSubtitle">Nhưng trước hết...</p>
+        <form class="password-form" id="passwordForm">
+            <label for="passwordInput">Bbi còn nhớ ngày chúng mình chính thức yêu nhau không?</label>
+            <input id="passwordInput" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="_ _ _ _ _ _ _ _" aria-describedby="passwordHint passwordFeedback">
+            <p class="password-hint" id="passwordHint">Một ngày mà anh không bao giờ quên.</p>
+            <p class="password-feedback" id="passwordFeedback" aria-live="polite"></p>
+            <button type="submit" class="gate-submit">Mở nơi nhỏ này</button>
+        </form>
+    </section>
+
     <div class="top-bar">
         <button class="icon-btn" id="audio-btn" title="Bật/Tắt Nhạc"><i class="fas fa-music"></i></button>
         <button class="icon-btn" id="reset-cam-btn" title="Góc nhìn ban đầu"><i class="fas fa-compress-arrows-alt"></i></button>
+        <button class="icon-btn" id="fullscreen-btn" title="Toàn màn hình"><i class="fas fa-expand"></i></button>
     </div>
 
     <div class="story-intro" id="storyIntro" aria-live="polite">
@@ -56,6 +72,7 @@
     <!-- Three.js & OrbitControls -->
     <script src="./assets/three.min.js"></script>
     <script src="./assets/OrbitControls.js"></script>
+    <script src="./assets/memories.js"></script>
     <script src="./assets/script.js"></script>
 </body>
 </html>
