@@ -350,67 +350,94 @@ treeGroup.add(blossomParticles);
 // TWO PEOPLE UNDER THE TREE
 function createCouple() {
   const couple = new THREE.Group();
-  const skinMat = new THREE.MeshStandardMaterial({
-    color: 0xf2c6a8,
-    roughness: 0.75,
-  });
-  const boyMat = new THREE.MeshStandardMaterial({
-    color: 0x3c5377,
-    roughness: 0.8,
-  });
-  const girlMat = new THREE.MeshStandardMaterial({
-    color: 0xc8758d,
-    roughness: 0.8,
-  });
-  const hairMat = new THREE.MeshStandardMaterial({
-    color: 0x21151c,
-    roughness: 0.9,
-  });
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xf3c5a6, emissive: 0x24150e, emissiveIntensity: 0.18, roughness: 0.82 });
+  const shirtMat = new THREE.MeshStandardMaterial({ color: 0xfff3d9, emissive: 0x251d12, emissiveIntensity: 0.3, roughness: 0.88 });
+  const pantsMat = new THREE.MeshStandardMaterial({ color: 0x253550, emissive: 0x070b14, emissiveIntensity: 0.2, roughness: 0.86 });
+  const dressMat = new THREE.MeshStandardMaterial({ color: 0xf4b9ca, emissive: 0x2b111e, emissiveIntensity: 0.26, roughness: 0.8 });
+  const hairMat = new THREE.MeshStandardMaterial({ color: 0x24171b, roughness: 0.9 });
+  const shoeMat = new THREE.MeshStandardMaterial({ color: 0xf8f0e5, roughness: 0.75 });
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x2a1a20, roughness: 0.45 });
 
-  const addMesh = (geometry, material, position, scale) => {
+  const addMesh = (geometry, material, position, scale, parent = couple) => {
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.copy(position);
     if (scale) mesh.scale.copy(scale);
-    couple.add(mesh);
+    parent.add(mesh);
     return mesh;
   };
 
-  const bodyGeo = new THREE.SphereGeometry(0.52, 14, 12);
-  const headGeo = new THREE.SphereGeometry(0.34, 14, 12);
-  const armGeo = new THREE.CylinderGeometry(0.1, 0.12, 1.05, 10);
-  const legGeo = new THREE.CylinderGeometry(0.14, 0.17, 0.88, 10);
+  const addLimb = (start, end, radius, material) => {
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const limb = new THREE.Mesh(
+      new THREE.CylinderGeometry(radius, radius * 0.9, direction.length(), 10),
+      material,
+    );
+    limb.position.copy(start).add(end).multiplyScalar(0.5);
+    limb.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+    couple.add(limb);
+    addMesh(new THREE.SphereGeometry(radius, 10, 8), material, start);
+    addMesh(new THREE.SphereGeometry(radius * 0.9, 10, 8), material, end);
+    return limb;
+  };
 
-  addMesh(bodyGeo, boyMat, new THREE.Vector3(0.28, 0.56, 0), new THREE.Vector3(0.9, 1.15, 0.72));
-  addMesh(headGeo, skinMat, new THREE.Vector3(0.28, 1.36, 0.06));
-  addMesh(new THREE.SphereGeometry(0.36, 14, 10), hairMat, new THREE.Vector3(0.28, 1.52, -0.02), new THREE.Vector3(1.02, 0.75, 1));
+  const addFace = (position, scale, hairScale, isGirl) => {
+    const head = new THREE.Group();
+    head.position.copy(position);
+    head.rotation.x = -0.2;
+    addMesh(new THREE.SphereGeometry(0.34, 20, 16), skinMat, new THREE.Vector3(), scale, head);
+    addMesh(new THREE.SphereGeometry(0.36, 20, 14), hairMat, new THREE.Vector3(0, 0.12, -0.035), hairScale, head);
+    const faceFront = 0.31;
+    addMesh(new THREE.SphereGeometry(0.042, 10, 8), eyeMat, new THREE.Vector3(-0.105, 0.025, faceFront), null, head);
+    addMesh(new THREE.SphereGeometry(0.042, 10, 8), eyeMat, new THREE.Vector3(0.105, 0.025, faceFront), null, head);
+    if (isGirl) {
+      addMesh(new THREE.SphereGeometry(0.15, 12, 10), hairMat, new THREE.Vector3(-0.27, -0.2, -0.03), new THREE.Vector3(0.75, 1.65, 0.68), head);
+      addMesh(new THREE.SphereGeometry(0.15, 12, 10), hairMat, new THREE.Vector3(0.27, -0.2, -0.03), new THREE.Vector3(0.75, 1.65, 0.68), head);
+      const bow = addMesh(new THREE.SphereGeometry(0.07, 10, 8), dressMat, new THREE.Vector3(-0.28, 0.18, 0.16), new THREE.Vector3(1.4, 0.7, 0.45), head);
+      bow.rotation.z = 0.35;
+    } else {
+      for (let index = -1; index <= 1; index++) {
+        const fringe = addMesh(new THREE.SphereGeometry(0.12, 10, 8), hairMat, new THREE.Vector3(index * 0.12, 0.3, 0.19), new THREE.Vector3(0.7, 1.2, 0.6), head);
+        fringe.rotation.z = index * 0.22;
+      }
+    }
+    couple.add(head);
+    return head;
+  };
 
-  addMesh(bodyGeo, girlMat, new THREE.Vector3(-0.38, 0.5, 0.14), new THREE.Vector3(0.82, 1.04, 0.7));
-  addMesh(headGeo, skinMat, new THREE.Vector3(-0.36, 1.25, 0.12));
-  addMesh(new THREE.SphereGeometry(0.39, 14, 10), hairMat, new THREE.Vector3(-0.42, 1.4, 0.03), new THREE.Vector3(1.1, 1.08, 1.05));
-  addMesh(new THREE.SphereGeometry(0.16, 10, 8), hairMat, new THREE.Vector3(-0.66, 1.1, 0.06), new THREE.Vector3(0.85, 1.6, 0.8));
+  // Both figures face local +Z, which is rotated toward the moon below.
+  addMesh(new THREE.SphereGeometry(0.54, 18, 14), shirtMat, new THREE.Vector3(0.28, 0.78, 0), new THREE.Vector3(0.86, 1.22, 0.68));
+  addMesh(new THREE.SphereGeometry(0.51, 18, 14), dressMat, new THREE.Vector3(-0.42, 0.63, 0.16), new THREE.Vector3(0.82, 1.16, 0.72));
+  addFace(new THREE.Vector3(0.28, 1.62, 0.12), new THREE.Vector3(1, 1.04, 0.96), new THREE.Vector3(1.04, 0.72, 1), false);
+  addFace(new THREE.Vector3(-0.38, 1.41, 0.27), new THREE.Vector3(0.96, 1, 0.94), new THREE.Vector3(1.08, 0.78, 1.04), true);
 
-  const boyLeg = addMesh(legGeo, boyMat, new THREE.Vector3(0.48, 0.08, 0.32));
-  boyLeg.rotation.x = Math.PI / 2.5;
-  const girlLeg = addMesh(legGeo, girlMat, new THREE.Vector3(-0.48, 0.08, 0.36));
-  girlLeg.rotation.x = Math.PI / 2.35;
-  addMesh(new THREE.SphereGeometry(0.16, 10, 8), hairMat, new THREE.Vector3(0.76, -0.02, 0.68), new THREE.Vector3(1.35, 0.6, 1));
-  addMesh(new THREE.SphereGeometry(0.16, 10, 8), hairMat, new THREE.Vector3(-0.72, -0.02, 0.72), new THREE.Vector3(1.35, 0.6, 1));
+  // Relaxed seated legs, separated enough to read from all angles.
+  addLimb(new THREE.Vector3(0.55, 0.5, 0.1), new THREE.Vector3(0.94, 0.16, 0.72), 0.16, pantsMat);
+  addLimb(new THREE.Vector3(0.94, 0.16, 0.72), new THREE.Vector3(0.82, 0.04, 1.28), 0.14, pantsMat);
+  addMesh(new THREE.SphereGeometry(0.18, 12, 8), shoeMat, new THREE.Vector3(0.82, 0.04, 1.42), new THREE.Vector3(1, 0.6, 1.45));
+  addLimb(new THREE.Vector3(0.1, 0.5, 0.02), new THREE.Vector3(-0.05, 0.12, 0.86), 0.15, pantsMat);
+  addMesh(new THREE.SphereGeometry(0.18, 12, 8), shoeMat, new THREE.Vector3(-0.05, 0.05, 1.02), new THREE.Vector3(1, 0.6, 1.4));
+  addLimb(new THREE.Vector3(-0.53, 0.43, 0.25), new THREE.Vector3(-0.95, 0.1, 0.74), 0.14, dressMat);
+  addMesh(new THREE.SphereGeometry(0.16, 12, 8), shoeMat, new THREE.Vector3(-0.96, 0.04, 1.02), new THREE.Vector3(1, 0.55, 1.32));
 
-  const pointingArm = addMesh(armGeo, boyMat, new THREE.Vector3(0.8, 1.24, 0.04));
-  pointingArm.rotation.z = -1.05;
-  pointingArm.rotation.x = -0.3;
+  // One arm holds her close; the other forms a clear line toward the moon.
+  addLimb(new THREE.Vector3(0.67, 1.03, 0.08), new THREE.Vector3(0.08, 1.02, 0.42), 0.11, shirtMat);
+  addLimb(new THREE.Vector3(0.08, 1.02, 0.42), new THREE.Vector3(-0.3, 0.93, 0.48), 0.1, skinMat);
+  addLimb(new THREE.Vector3(0.72, 1.14, 0.08), new THREE.Vector3(1.0, 1.68, 0.48), 0.105, shirtMat);
+  addLimb(new THREE.Vector3(1.0, 1.68, 0.48), new THREE.Vector3(0.8, 2.2, 1.08), 0.09, skinMat);
+  const pointingHand = addMesh(new THREE.SphereGeometry(0.11, 12, 8), skinMat, new THREE.Vector3(0.78, 2.2, 1.1), new THREE.Vector3(0.75, 0.75, 1.5));
+  pointingHand.rotation.x = -0.65;
 
-  const holdingArm = addMesh(armGeo, boyMat, new THREE.Vector3(-0.05, 0.93, 0.33));
-  holdingArm.rotation.z = 0.92;
-  holdingArm.rotation.x = 0.3;
+  // Her arms rest naturally around his torso and keep both silhouettes readable.
+  addLimb(new THREE.Vector3(-0.68, 0.98, 0.3), new THREE.Vector3(-0.2, 1.08, 0.5), 0.09, dressMat);
+  addLimb(new THREE.Vector3(-0.2, 1.08, 0.5), new THREE.Vector3(0.1, 1.0, 0.48), 0.08, skinMat);
+  addLimb(new THREE.Vector3(-0.15, 0.99, 0.3), new THREE.Vector3(0.05, 0.86, 0.45), 0.085, dressMat);
 
-  const hugArm = addMesh(armGeo, girlMat, new THREE.Vector3(-0.03, 1.05, 0.36));
-  hugArm.rotation.z = 1.1;
-  hugArm.rotation.x = 0.45;
-
-  couple.position.set(0, 4.18, 1.28);
+  couple.position.set(0, 4.2, 1.55);
   couple.rotation.y = Math.atan2(moonPosition.x - couple.position.x, moonPosition.z - couple.position.z);
-  couple.scale.setScalar(1.35);
+  couple.scale.setScalar(1.72);
+  const rimLight = new THREE.PointLight(0xffd9bd, 0.8, 7);
+  rimLight.position.set(-1.8, 3.2, 2.8);
+  couple.add(rimLight);
   return couple;
 }
 
